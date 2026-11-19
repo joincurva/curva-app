@@ -49,3 +49,14 @@ export type PresaleWindow = {
   timeZone: string;
   dates: PresaleDate[];
 };
+export type MySale = {
+  key: string;
+  title: string;
+  label: string;
+  kind: "presale" | "onsale";
+  start: string;
+  time: string;
+  timeZone: string;
+  dates: number;
+  eventId?: string;
+};

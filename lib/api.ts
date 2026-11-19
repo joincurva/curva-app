@@ -101,3 +101,5 @@ export const saveSaleReminder = (
     },
     token,
   );
+export const getMySales = (token: string) =>
+  request<{ watching: number; sales: import("./types").MySale[] }>("/api/presales/mine", {}, token);
