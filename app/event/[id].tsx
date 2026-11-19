@@ -1,16 +1,19 @@
-import React, { useMemo, useState } from "react";
-import {
-  Alert,
-  Image,
-  Linking,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
-import { Body, Button, Card, Heading, Title } from "../../components/ui";
+import React, { useMemo } from "react";
+import { Image, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { Stack, router, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { TicketHandoff } from "../../components/handoff";
+import { Body, Title } from "../../components/ui";
+import { officialTicketUrl, openOfficialTickets } from "../../lib/official";
 import type { Event } from "../../lib/types";
-import { colors, space } from "../../lib/theme";
+import { brand, colors, radius, space } from "../../lib/theme";
+
+const TIPS = [
+  { icon: "pricetag-outline", text: "Face value is the price on the official page. Listings far above it are usually resellers." },
+  { icon: "time-outline", text: "Sold out? Set a Ticket Alert. Official releases and fan-to-fan resale at face value often appear later." },
+  { icon: "shield-checkmark-outline", text: "Only buy through the official seller's page or app, never from links in DMs or comments." },
+] as const;
+
 export default function EventDetail() {
   const params = useLocalSearchParams<{ event?: string }>();
   const event = useMemo(() => {
@@ -20,127 +23,139 @@ export default function EventDetail() {
       return undefined;
     }
   }, [params.event]);
-  const [opening, setOpening] = useState(false);
   if (!event)
     return (
       <View style={s.page}>
         <Title>Event unavailable</Title>
-        <Body muted>Return to Discover and open this event again.</Body>
+        <Body muted>Go back to Discover and open this event again.</Body>
       </View>
     );
-  const getTickets = async () => {
-    if (!event.officialUrl)
-      return Alert.alert(
-        "Official link unavailable",
-        "Curva does not have a verified official-provider URL for this event.",
-      );
-    let url: URL;
-    try {
-      url = new URL(event.officialUrl);
-    } catch {
-      return Alert.alert(
-        "Official link unavailable",
-        "The official-provider URL for this event is invalid.",
-      );
-    }
-    if (
-      url.protocol !== "https:" ||
-      !(
-        url.hostname === "ticketmaster.com" ||
-        url.hostname.endsWith(".ticketmaster.com")
-      )
-    )
-      return Alert.alert(
-        "Link blocked",
-        "Curva only opens verified official ticket-provider links.",
-      );
-    setOpening(true);
-    try {
-      await Linking.openURL(url.toString());
-    } catch {
-      Alert.alert(
-        "Could not open Ticketmaster",
-        "Check your connection and try again.",
-      );
-    } finally {
-      setOpening(false);
-    }
-  };
+  const when = new Date(`${event.date}T${event.time ?? "12:00:00"}`).toLocaleString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    ...(event.time ? { hour: "numeric", minute: "2-digit" } : {}),
+  });
+  const verified = Boolean(officialTicketUrl(event.officialUrl));
+  const share = () =>
+    void Share.share({
+      message: `${event.name} · ${when} · ${event.venue}, ${event.city}. Found it on Curva: https://joincurva.com`,
+    }).catch(() => undefined);
+  const alert = () =>
+    router.push({
+      pathname: "/(tabs)/alerts",
+      params: { eventId: event.id, eventName: event.name, venue: event.venue, city: event.city },
+    });
   return (
     <ScrollView style={s.page} contentContainerStyle={s.content}>
-      {event.imageUrl && (
+      <Stack.Screen
+        options={{
+          title: "",
+          headerRight: () => (
+            <Pressable accessibilityRole="button" accessibilityLabel="Share this event" onPress={share} hitSlop={12}>
+              <Ionicons name="share-outline" size={24} color={colors.ink} />
+            </Pressable>
+          ),
+        }}
+      />
+      {event.imageUrl ? (
         <Image
           source={{ uri: event.imageUrl }}
-          alt={event.imageAlt ?? "Event artwork"}
           accessibilityLabel={event.imageAlt ?? "Event artwork"}
           style={s.image}
         />
-      )}
-      <Title>{event.name}</Title>
-      <Body>
-        {new Date(`${event.date}T${event.time ?? "12:00:00"}`).toLocaleString(
-          undefined,
-          { dateStyle: "full", timeStyle: event.time ? "short" : undefined },
+      ) : null}
+      <View style={s.band}>
+        <Text style={s.category}>{event.category}</Text>
+        <Text style={s.title} accessibilityRole="header">
+          {event.name}
+        </Text>
+        <View style={s.line}>
+          <Ionicons name="calendar-outline" size={18} color={brand.mist} />
+          <Text style={s.lineText}>{when}</Text>
+        </View>
+        <View style={s.line}>
+          <Ionicons name="location-outline" size={18} color={brand.mist} />
+          <Text style={s.lineText}>
+            {event.venue}, {event.city}
+            {event.region ? `, ${event.region}` : ""}
+          </Text>
+        </View>
+      </View>
+
+      <View style={s.card}>
+        <Text style={s.h2}>Tickets</Text>
+        {verified ? (
+          <TicketHandoff label="Get tickets at face value" onPress={() => void openOfficialTickets(event.officialUrl)} />
+        ) : (
+          <Text style={s.muted}>
+            Curva doesn&apos;t have a verified official page for this event yet. Set a Ticket Alert and we&apos;ll tell you
+            when it&apos;s on sale.
+          </Text>
         )}
-      </Body>
-      <Heading>{event.venue}</Heading>
-      <Body muted>
-        {event.city}
-        {event.region ? `, ${event.region}` : ""} · {event.category}
-      </Body>
-      <Card>
-        <Heading>Official tickets</Heading>
-        <Body muted>
-          Curva does not sell tickets. Availability and final prices are
-          confirmed by the official provider.
-        </Body>
-        <Button
-          label={
-            opening
-              ? "Opening Ticketmaster…"
-              : event.officialUrl
-                ? "Get tickets from Ticketmaster"
-                : "Official link unavailable"
-          }
-          disabled={opening || !event.officialUrl}
-          onPress={getTickets}
-        />
-      </Card>
-      <Button
-        variant="secondary"
-        label="Create a Ticket Alert"
-        onPress={() =>
-          router.push({
-            pathname: "/(tabs)/alerts",
-            params: {
-              eventId: event.id,
-              eventName: event.name,
-              venue: event.venue,
-              city: event.city,
-            },
-          })
-        }
-      />
-      <Button
-        variant="secondary"
-        label="Ask Curva about this"
-        onPress={() =>
-          router.push({
-            pathname: "/(tabs)/ask",
-            params: { eventId: event.id, eventName: event.name },
-          })
-        }
-      />
+        <Pressable accessibilityRole="button" onPress={alert} style={({ pressed }) => [s.secondary, pressed && { opacity: 0.7 }]}>
+          <Ionicons name="notifications-outline" size={18} color={brand.navy} />
+          <Text style={s.secondaryText}>Create a Ticket Alert</Text>
+        </Pressable>
+      </View>
+
+      <View style={s.card}>
+        <Text style={s.h2}>Buying smart</Text>
+        {TIPS.map((tip) => (
+          <View key={tip.text} style={s.tip}>
+            <Ionicons name={tip.icon} size={20} color={colors.cobalt} />
+            <Text style={s.tipText}>{tip.text}</Text>
+          </View>
+        ))}
+      </View>
+
+      <Text style={s.foot}>
+        Event details from Ticketmaster&apos;s official listing. Curva doesn&apos;t sell tickets and isn&apos;t affiliated with
+        any artist, team, venue or ticket seller.
+      </Text>
     </ScrollView>
   );
 }
+
 const s = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.canvas },
   content: { padding: space.lg, gap: space.lg, paddingBottom: 60 },
-  image: {
-    width: "100%",
-    aspectRatio: 16 / 9,
-    borderRadius: 20,
-    backgroundColor: colors.border,
+  image: { width: "100%", aspectRatio: 16 / 9, borderRadius: radius.card, backgroundColor: colors.border },
+  band: {
+    backgroundColor: brand.navy,
+    borderRadius: radius.card,
+    padding: space.xl,
+    gap: space.sm,
+    borderBottomWidth: 4,
+    borderBottomColor: brand.gold,
   },
+  category: { color: brand.gold, fontSize: 13, fontWeight: "700" },
+  title: { color: "white", fontSize: 26, lineHeight: 31, fontWeight: "800", letterSpacing: -0.5 },
+  line: { flexDirection: "row", gap: space.sm, alignItems: "flex-start" },
+  lineText: { flex: 1, color: brand.mist, fontSize: 15, lineHeight: 21 },
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: space.lg,
+    gap: space.md,
+  },
+  h2: { fontSize: 19, fontWeight: "800", color: colors.ink },
+  muted: { fontSize: 14, lineHeight: 20, color: colors.muted },
+  secondary: {
+    minHeight: 48,
+    borderRadius: radius.control,
+    borderWidth: 1,
+    borderColor: colors.border,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.sm,
+  },
+  secondaryText: { color: brand.navy, fontWeight: "700", fontSize: 15 },
+  tip: { flexDirection: "row", gap: space.md, alignItems: "flex-start" },
+  tipText: { flex: 1, fontSize: 15, lineHeight: 21, color: colors.ink },
+  foot: { fontSize: 12, lineHeight: 17, color: colors.muted, textAlign: "center" },
 });

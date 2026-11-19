@@ -1,8 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
-  Alert,
   FlatList,
-  Linking,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -11,84 +9,43 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { Body, Button, Input, Screen, State, Title } from "../../components/ui";
-import { getPresales, saveSaleReminder } from "../../lib/api";
-import { turnOnSaleAlerts } from "../../lib/push";
-import { useSession } from "../../lib/session";
+import { Ionicons } from "@expo/vector-icons";
+import { getPresales } from "../../lib/api";
+import { useReminders } from "../../lib/remind";
+import { countdown, dayLabel, showDate, useNow } from "../../lib/time";
 import { brand, colors, radius, space } from "../../lib/theme";
-import type { PresaleDate, PresaleWindow } from "../../lib/types";
+import type { PresaleWindow } from "../../lib/types";
 
-function dayLabel(iso: string, timeZone: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    timeZone,
-  });
-}
-
-function showDate(date: string) {
-  return new Date(`${date.slice(0, 10)}T12:00:00`).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-async function openOfficial(raw: string) {
-  let url: URL;
-  try {
-    url = new URL(raw);
-  } catch {
-    return Alert.alert("Official link unavailable", "This listing has no valid official link.");
-  }
-  if (
-    url.protocol !== "https:" ||
-    !(url.hostname === "ticketmaster.com" || url.hostname.endsWith(".ticketmaster.com"))
-  )
-    return Alert.alert("Link blocked", "Curva only opens verified official ticket links.");
-  try {
-    await Linking.openURL(url.toString());
-  } catch {
-    Alert.alert("Could not open Ticketmaster", "Check your connection and try again.");
-  }
+function openSale(sale: PresaleWindow) {
+  router.push({ pathname: "/sale/[key]", params: { key: sale.key, title: sale.title, sale: JSON.stringify(sale) } });
 }
 
 function Window({ sale }: { sale: PresaleWindow }) {
-  const { session } = useSession();
-  const [saved, setSaved] = useState<Record<string, "saving" | "on">>({});
-  const remind = async (date: PresaleDate) => {
-    if (!session) {
-      Alert.alert("Sign in to get reminders", "We'll email you the day before and right before the queue opens.", [
-        { text: "Not now", style: "cancel" },
-        { text: "Sign in", onPress: () => router.push("/auth") },
-      ]);
-      return;
-    }
-    setSaved((v) => ({ ...v, [date.id]: "saving" }));
-    try {
-      await saveSaleReminder(date, session.token);
-      setSaved((v) => ({ ...v, [date.id]: "on" }));
-      // Ask for notifications at the moment they matter; email reminders work either way.
-      void turnOnSaleAlerts(session.token).catch(() => undefined);
-    } catch (x) {
-      setSaved((v) => {
-        const next = { ...v };
-        delete next[date.id];
-        return next;
-      });
-      Alert.alert("Reminder not saved", x instanceof Error ? x.message : "Try again in a moment.");
-    }
-  };
+  const { saved, remind } = useReminders();
+  const now = useNow(sale.start);
   return (
     <View style={s.card}>
-      <View style={s.when}>
-        <Text style={s.day}>{dayLabel(sale.start, sale.timeZone)}</Text>
-        <Text style={s.time}>{sale.time}</Text>
-      </View>
-      <Text style={s.title} accessibilityRole="header">
-        {sale.title}
-      </Text>
-      <Text style={[s.badge, sale.kind === "onsale" ? s.onsale : s.presale]}>{sale.label}</Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${sale.title}, ${sale.label}. Open sale details`}
+        onPress={() => openSale(sale)}
+        style={({ pressed }) => [s.head, pressed && { opacity: 0.7 }]}
+      >
+        <View style={s.when}>
+          <Text style={s.day}>{dayLabel(sale.start, sale.timeZone)}</Text>
+          <Text style={s.time}>{sale.time}</Text>
+        </View>
+        <View style={s.titleRow}>
+          <Text style={s.title} accessibilityRole="header">
+            {sale.title}
+          </Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.muted} />
+        </View>
+        <View style={s.metaRow}>
+          <Text style={[s.badge, sale.kind === "onsale" ? s.onsale : s.presale]}>{sale.label}</Text>
+          <Text style={s.count}>{countdown(sale.start, now)}</Text>
+        </View>
+      </Pressable>
       {sale.dates.map((date) => {
         const state = saved[date.id];
         return (
@@ -109,17 +66,22 @@ function Window({ sale }: { sale: PresaleWindow }) {
                 onPress={() => void remind(date)}
                 style={[s.remind, state === "on" && s.remindOn]}
               >
+                <Ionicons
+                  name={state === "on" ? "notifications" : "notifications-outline"}
+                  size={16}
+                  color={state === "on" ? brand.navy : "white"}
+                />
                 <Text style={[s.remindText, state === "on" && s.remindTextOn]}>
                   {state === "on" ? "Reminder on" : state === "saving" ? "Saving…" : "Remind me"}
                 </Text>
               </Pressable>
               <Pressable
-                accessibilityRole="link"
-                accessibilityLabel={`Official page for ${date.name}`}
-                onPress={() => void openOfficial(date.officialUrl)}
+                accessibilityRole="button"
+                accessibilityLabel={`Sale details for ${date.name}`}
+                onPress={() => openSale(sale)}
                 style={s.official}
               >
-                <Text style={s.officialText}>Official page</Text>
+                <Text style={s.officialText}>Details</Text>
               </Pressable>
             </View>
           </View>
@@ -223,10 +185,14 @@ const s = StyleSheet.create({
     padding: space.lg,
     gap: space.sm,
   },
+  head: { gap: space.sm },
+  titleRow: { flexDirection: "row", alignItems: "center", gap: space.sm },
+  metaRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.sm },
+  count: { fontSize: 13, fontWeight: "700", color: colors.muted, fontVariant: ["tabular-nums"] },
   when: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" },
   day: { fontSize: 14, fontWeight: "800", color: colors.cobalt },
   time: { fontSize: 14, fontWeight: "700", color: colors.ink },
-  title: { fontSize: 19, lineHeight: 24, fontWeight: "800", color: colors.ink },
+  title: { flex: 1, fontSize: 19, lineHeight: 24, fontWeight: "800", color: colors.ink },
   badge: {
     alignSelf: "flex-start",
     fontSize: 12,
@@ -253,7 +219,9 @@ const s = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: radius.control,
     backgroundColor: brand.navy,
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   remindOn: { backgroundColor: brand.gold },
   remindText: { color: "white", fontWeight: "700", fontSize: 14 },

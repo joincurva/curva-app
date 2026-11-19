@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Alert, Linking, ScrollView, StyleSheet } from "react-native";
+import { Alert, ScrollView, StyleSheet } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import { router } from "expo-router";
 import {
   Body,
@@ -13,7 +14,7 @@ import {
 import { request } from "../../lib/api";
 import { turnOffSaleAlerts, turnOnSaleAlerts } from "../../lib/push";
 import { useSession } from "../../lib/session";
-import { space } from "../../lib/theme";
+import { brand, space } from "../../lib/theme";
 type Membership = { plan: "free" | "plus" | "premier"; status: string };
 export default function Account() {
   const { session, setSession } = useSession();
@@ -168,7 +169,7 @@ export default function Account() {
             variant="secondary"
             label="Privacy policy"
             onPress={() =>
-              void Linking.openURL("https://joincurva.com/privacy").catch(() =>
+              void WebBrowser.openBrowserAsync("https://joincurva.com/privacy", { controlsColor: brand.navy, dismissButtonStyle: "done" }).catch(() =>
                 setAccountError("The privacy policy could not be opened."),
               )
             }
@@ -177,7 +178,7 @@ export default function Account() {
             variant="secondary"
             label="Terms"
             onPress={() =>
-              void Linking.openURL("https://joincurva.com/terms").catch(() =>
+              void WebBrowser.openBrowserAsync("https://joincurva.com/terms", { controlsColor: brand.navy, dismissButtonStyle: "done" }).catch(() =>
                 setAccountError("The terms could not be opened."),
               )
             }
@@ -186,7 +187,7 @@ export default function Account() {
             variant="secondary"
             label="Accessibility"
             onPress={() =>
-              void Linking.openURL("https://joincurva.com/accessibility").catch(
+              void WebBrowser.openBrowserAsync("https://joincurva.com/accessibility", { controlsColor: brand.navy, dismissButtonStyle: "done" }).catch(
                 () =>
                   setAccountError("The accessibility page could not be opened."),
               )

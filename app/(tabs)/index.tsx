@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { EventCard } from "../../components/event-card";
 import { Body, Button, Heading, Screen, State } from "../../components/ui";
 import { getEvents, getMySales, getPresales } from "../../lib/api";
@@ -20,6 +21,7 @@ function SaleRow({ title, label, when, onPress }: { title: string; label: string
         <Text style={s.rowLabel} numberOfLines={1}>{label}</Text>
       </View>
       <Text style={s.rowWhen}>{when}</Text>
+      <Ionicons name="chevron-forward" size={18} color={colors.muted} />
     </Pressable>
   );
 }
@@ -78,7 +80,7 @@ export default function Home() {
             {mine.length ? (
               <View style={s.card}>
                 {mine.map((sale) => (
-                  <SaleRow key={sale.key} title={sale.title} label={sale.label} when={`${day(sale.start, sale.timeZone)} · ${sale.time}`} onPress={toPresales} />
+                  <SaleRow key={sale.key} title={sale.title} label={sale.label} when={`${day(sale.start, sale.timeZone)} · ${sale.time}`} onPress={() => router.push({ pathname: "/sale/[key]", params: { key: sale.key, title: sale.title } })} />
                 ))}
               </View>
             ) : (
@@ -100,7 +102,7 @@ export default function Home() {
           {soon.length ? (
             <View style={s.card}>
               {soon.map((sale) => (
-                <SaleRow key={sale.key} title={sale.title} label={sale.label} when={`${day(sale.start, sale.timeZone)} · ${sale.time}`} onPress={toPresales} />
+                <SaleRow key={sale.key} title={sale.title} label={sale.label} when={`${day(sale.start, sale.timeZone)} · ${sale.time}`} onPress={() => router.push({ pathname: "/sale/[key]", params: { key: sale.key, title: sale.title, sale: JSON.stringify(sale) } })} />
               ))}
               <Pressable accessibilityRole="link" onPress={toPresales} style={s.more}>
                 <Text style={s.moreText}>See every presale</Text>
