@@ -1,6 +1,7 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import type { ColorValue } from "react-native";
 import { brand } from "../../lib/theme";
 
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
@@ -8,8 +9,8 @@ type IconName = React.ComponentProps<typeof Ionicons>["name"];
 // One icon family, one size, filled when selected: every tab reads the same.
 const icon =
   (name: string) =>
-  ({ color, focused }: { color: string; focused: boolean }) => (
-    <Ionicons name={(focused ? name : `${name}-outline`) as IconName} size={24} color={color} />
+  ({ color, focused }: { color: ColorValue; focused: boolean }) => (
+    <Ionicons name={(focused ? name : `${name}-outline`) as IconName} size={24} color={color as string} />
   );
 
 export default function TabsLayout() {
