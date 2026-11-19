@@ -1,9 +1,9 @@
 {
   "cli": { "version": ">= 16.0.0", "appVersionSource": "remote" },
   "build": {
-    "development": { "developmentClient": true, "distribution": "internal", "env": { "CURVA_MOBILE_ENV": "development" }, "ios": { "simulator": true, "image": "latest" } },
-    "preview": { "distribution": "internal", "env": { "CURVA_MOBILE_ENV": "preview", "EXPO_PUBLIC_CURVA_API_URL": "https://joincurva.com" }, "ios": { "image": "latest" } },
-    "production": { "distribution": "store", "autoIncrement": true, "env": { "CURVA_MOBILE_ENV": "production", "EXPO_PUBLIC_CURVA_API_URL": "https://joincurva.com" }, "ios": { "image": "latest" } }
+    "production": { "autoIncrement": true }
   },
-  "submit": { "production": { "ios": {} } }
+  "submit": {
+    "production": {}
+  }
 }

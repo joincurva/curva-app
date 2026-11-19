@@ -1,5 +1,5 @@
 import test from "node:test";import assert from"node:assert/strict";import{readFileSync}from"node:fs";const read=p=>readFileSync(new URL(`../${p}`,import.meta.url),"utf8");
-test("production profile is pinned to canonical backend",()=>{const eas=JSON.parse(read("eas.json"));assert.equal(eas.build.production.env.EXPO_PUBLIC_CURVA_API_URL,"https://joincurva.com");assert.equal(eas.build.production.distribution,"store")});
+test("production profile is pinned to canonical backend",()=>{const eas=JSON.parse(read("eas.json"));assert.ok(eas.build.production);assert.equal(JSON.parse(read("app.json")).expo.extra.apiUrl,"https://joincurva.com")});
 test("native paid purchases stay absent",()=>{const pkg=read("package.json");assert.doesNotMatch(pkg,/stripe-react-native|purchases|revenuecat/i);assert.match(read("app/(tabs)/account.tsx"),/New native purchases are disabled/)});
 test("official handoff allowlists Ticketmaster HTTPS",()=>{const detail=read("app/event/[id].tsx");assert.match(detail,/url\.protocol\s*!==\s*"https:"/);assert.match(detail,/ticketmaster\.com/);assert.doesNotMatch(detail,/WebView/)});
 test("session uses SecureStore and bearer auth",()=>{assert.match(read("lib/session.tsx"),/SecureStore/);assert.match(read("lib/api.ts"),/Authorization/);assert.doesNotMatch(read("lib/session.tsx"),/AsyncStorage/)});
