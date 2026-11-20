@@ -75,6 +75,9 @@ export type FanEvent = {
   lifecycle_state: string;
   change_kind: string | null;
   previous_event_date: string | null;
+  memory_note?: string | null;
+  companions?: string | null;
+  meetup_note?: string | null;
 };
 
 /** States that mean the fan has tickets or is going. */

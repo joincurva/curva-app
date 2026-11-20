@@ -160,3 +160,6 @@ export const addSignup = (input: { title: string; providerEventId?: string; sign
   request<{ signup: import("./types").PresaleSignup }>("/api/presale-signups", { method: "POST", body: JSON.stringify(input) }, token);
 export const setSignupStatus = (id: string, status: import("./types").PresaleSignup["status"], token: string) =>
   request<unknown>("/api/presale-signups", { method: "PATCH", body: JSON.stringify({ id, status }) }, token);
+
+export const updateMyEvent = (id: string, plan: { companions?: string | null; meetupNote?: string | null; memoryNote?: string | null }, token: string) =>
+  request<{ event: import("./types").FanEvent }>(`/api/fan-events/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(plan) }, token);

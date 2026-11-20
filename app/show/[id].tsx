@@ -4,6 +4,7 @@ import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getCompanion, removeMyEvent } from "../../lib/api";
 import { subscribeCalendar } from "../../lib/calendar";
+import { ShowNotes } from "../../components/show-notes";
 import { openOfficialTickets } from "../../lib/official";
 import { useSession } from "../../lib/session";
 import { brand, colors, radius, space } from "../../lib/theme";
@@ -74,7 +75,7 @@ export default function ShowScreen() {
         }}
       />
       <View style={s.band}>
-        <Text style={s.going}>You&apos;re going</Text>
+        <Text style={s.going}>{(days ?? 0) < 0 ? "You were there" : "You're going"}</Text>
         <Text style={s.title} accessibilityRole="header">
           {show.event_name}
         </Text>
@@ -148,6 +149,8 @@ export default function ShowScreen() {
           <Text style={s.small}>From the venue&apos;s official Ticketmaster listing. Policies can change, so check the venue&apos;s website before you go.</Text>
         </View>
       ) : null}
+
+      <ShowNotes show={show} past={(days ?? 0) < 0} />
 
       <View style={s.card}>
         <Text style={s.h2}>Show-day plan</Text>

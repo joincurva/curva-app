@@ -7,6 +7,7 @@ import { Body, Button, Heading, Screen, State } from "../../components/ui";
 import { getEvents, getMyEvents, getMySales, getPresales } from "../../lib/api";
 import { useFollows } from "../../lib/follows";
 import { approximateCity } from "../../lib/location";
+import { buildRecap } from "../../lib/recap";
 import { countdownLabel, daysUntil, showDate } from "../../lib/time";
 import { useSession } from "../../lib/session";
 import { brand, colors, radius, space } from "../../lib/theme";
@@ -33,6 +34,7 @@ export default function Home() {
   const { session } = useSession();
   const [mine, setMine] = useState<MySale[]>([]);
   const [shows, setShows] = useState<FanEvent[]>([]);
+  const [pastCount, setPastCount] = useState(0);
   const { follows } = useFollows();
   const [near, setNear] = useState("");
   const [watching, setWatching] = useState(0);
@@ -53,6 +55,11 @@ export default function Home() {
         session ? getMySales(session.token).catch(() => ({ watching: 0, sales: [] })) : Promise.resolve({ watching: 0, sales: [] }),
         session ? getMyEvents(session.token).catch(() => ({ events: [] as FanEvent[] })) : Promise.resolve({ events: [] as FanEvent[] }),
       ]);
+      {
+        const t = new Date();
+        const todayIso = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+        setPastCount(buildRecap(f.events, t.getFullYear(), todayIso).count);
+      }
       setShows(
         f.events
           .filter((x) => (GOING_STATES as readonly string[]).includes(x.lifecycle_state) && (daysUntil(x.event_date) ?? 0) >= 0)
@@ -79,7 +86,7 @@ export default function Home() {
         <View style={s.band}>
           <Text style={s.brand}>curva</Text>
           <Text style={s.headline}>Your live-event life, in one place.</Text>
-          <Text style={s.sub}>Every official presale and on-sale, reminders before the queue opens, and tickets at face value from the official seller.</Text>
+          <Text style={s.sub}>Follow who you love once. Curva gets you to every presale on time, sends you to the official seller at face value, then helps you plan the night.</Text>
           {!session ? (
             <Pressable accessibilityRole="button" onPress={() => router.push("/auth")} style={s.cta}>
               <Text style={s.ctaText}>Sign in to get reminders</Text>
@@ -93,6 +100,13 @@ export default function Home() {
           <Pressable accessibilityRole="button" onPress={() => router.push("/welcome")} style={s.followCard}>
             <Text style={s.followTitle}>Follow who you love</Text>
             <Text style={s.followSub}>One tap per artist, team or show and Curva covers every presale and on-sale.</Text>
+          </Pressable>
+        ) : null}
+
+        {session && pastCount ? (
+          <Pressable accessibilityRole="button" onPress={() => router.push("/recap")} style={s.recapCard}>
+            <Text style={s.recapTitle}>Your {new Date().getFullYear()} in live events</Text>
+            <Text style={s.recapSub}>{pastCount} show{pastCount === 1 ? "" : "s"} so far. Add memories and share your year.</Text>
           </Pressable>
         ) : null}
 
@@ -168,6 +182,9 @@ export default function Home() {
 }
 
 const s = StyleSheet.create({
+  recapCard: { backgroundColor: "#0B1633", borderRadius: 16, padding: 18, gap: 4, borderBottomWidth: 4, borderBottomColor: "#FFD873" },
+  recapTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "800" },
+  recapSub: { color: "#C9D3FF", fontSize: 15, lineHeight: 21 },
   followCard: { backgroundColor: "#FFD873", borderRadius: 16, padding: 18, gap: 4 },
   followTitle: { color: "#0B1633", fontSize: 18, fontWeight: "800" },
   followSub: { color: "#0B1633", fontSize: 15, lineHeight: 21 },
