@@ -1,12 +1,14 @@
-import React, { useMemo } from "react";
-import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { Alert, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { removeMyEvent } from "../../lib/api";
+import { getCompanion, removeMyEvent } from "../../lib/api";
+import { subscribeCalendar } from "../../lib/calendar";
+import { openOfficialTickets } from "../../lib/official";
 import { useSession } from "../../lib/session";
 import { brand, colors, radius, space } from "../../lib/theme";
 import { countdownLabel, daysUntil, showDate } from "../../lib/time";
-import type { FanEvent } from "../../lib/types";
+import type { Companion, FanEvent } from "../../lib/types";
 
 const PLAN = [
   { icon: "phone-portrait-outline", title: "Tickets ready", text: "Your tickets live in the Ticketmaster app. Open them before you leave and add them to Apple Wallet if offered, in case signal is weak at the venue." },
@@ -25,6 +27,15 @@ export default function ShowScreen() {
       return undefined;
     }
   }, [params.show]);
+  const [info, setInfo] = useState<Companion>();
+  useEffect(() => {
+    if (!show?.provider_event_id || show.provider !== "ticketmaster") return;
+    let live = true;
+    void getCompanion(show.provider_event_id).then((c) => live && setInfo(c)).catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [show?.provider_event_id, show?.provider]);
   if (!show)
     return (
       <View style={s.page}>
@@ -94,6 +105,50 @@ export default function ShowScreen() {
         </View>
       ) : null}
 
+      <View style={s.actions}>
+        <Action icon="navigate" label="Directions" onPress={() => void Linking.openURL(info?.directions.apple ?? `https://maps.apple.com/?daddr=${encodeURIComponent([show.venue_name, show.city].filter(Boolean).join(", "))}`)} />
+        <Action icon="train" label="Transit" onPress={() => void Linking.openURL(info?.directions.appleTransit ?? `https://maps.apple.com/?daddr=${encodeURIComponent([show.venue_name, show.city].filter(Boolean).join(", "))}&dirflg=r`)} />
+        <Action icon="calendar" label="Calendar" onPress={() => session && void subscribeCalendar(session.token)} />
+        <Action icon="ticket" label="Event page" onPress={() => void openOfficialTickets(info?.officialUrl ?? show.official_url ?? undefined)} />
+      </View>
+
+      {info?.weather ? (
+        <View style={[s.card, s.weather]}>
+          <Ionicons name="partly-sunny-outline" size={28} color={colors.cobalt} />
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={s.tipTitle}>
+              {info.weather.label}: {info.weather.temperature}°{info.weather.unit} · {info.weather.summary}
+            </Text>
+            <Text style={s.small}>
+              {info.weather.rainChance != null ? `${info.weather.rainChance}% chance of rain. ` : ""}Forecast from the {info.weather.source}.
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      {info?.venueGuide ? (
+        <View style={s.card}>
+          <Text style={s.h2}>{show.venue_name ?? "Venue"} essentials</Text>
+          {([
+            ["shield-checkmark-outline", "Venue rules", info.venueGuide.rules],
+            ["car-outline", "Parking", info.venueGuide.parking],
+            ["ticket-outline", "Will call", info.venueGuide.willCall],
+            ["time-outline", "Box office", info.venueGuide.boxOfficeHours],
+            ["accessibility-outline", "Accessibility", info.venueGuide.accessibility],
+            ["people-outline", "Kids", info.venueGuide.childPolicy],
+          ] as const).filter(([, , text]) => Boolean(text)).map(([icon, title, text]) => (
+            <View key={title} style={s.tip}>
+              <Ionicons name={icon} size={22} color={colors.cobalt} />
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={s.tipTitle}>{title}</Text>
+                <Text style={s.tipText}>{text}</Text>
+              </View>
+            </View>
+          ))}
+          <Text style={s.small}>From the venue&apos;s official Ticketmaster listing. Policies can change, so check the venue&apos;s website before you go.</Text>
+        </View>
+      ) : null}
+
       <View style={s.card}>
         <Text style={s.h2}>Show-day plan</Text>
         {PLAN.map((step) => (
@@ -114,7 +169,21 @@ export default function ShowScreen() {
   );
 }
 
+function Action({ icon, label, onPress }: { icon: React.ComponentProps<typeof Ionicons>["name"]; label: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => [s.action, pressed && { opacity: 0.7 }]}>
+      <Ionicons name={icon} size={22} color={brand.navy} />
+      <Text style={s.actionText}>{label}</Text>
+    </Pressable>
+  );
+}
+
 const s = StyleSheet.create({
+  actions: { flexDirection: "row", gap: space.sm },
+  action: { flex: 1, alignItems: "center", gap: 4, paddingVertical: 12, borderRadius: radius.card, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  actionText: { fontSize: 12, fontWeight: "800", color: brand.navy },
+  weather: { flexDirection: "row", alignItems: "center" },
+  small: { fontSize: 12, lineHeight: 17, color: colors.muted },
   page: { flex: 1, backgroundColor: colors.canvas },
   content: { padding: space.lg, gap: space.lg, paddingBottom: 60 },
   band: { backgroundColor: brand.navy, borderRadius: radius.card, padding: space.xl, gap: space.sm, borderBottomWidth: 4, borderBottomColor: brand.gold },

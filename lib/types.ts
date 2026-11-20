@@ -81,3 +81,12 @@ export type FanEvent = {
 export const GOING_STATES = ["MARKED_GOING", "PLANNING", "PURCHASE_CONFIRMED", "EVENT_DAY"] as const;
 
 export type Follow = { name: string; name_key: string; kind: "artist" | "team" | "show" | "venue"; created_at: string };
+
+export type Companion = {
+  id: string; name: string; date: string; time?: string; timeZone?: string;
+  venue: string; city: string; region?: string; officialUrl?: string; saleStatus?: string;
+  venueGuide: { parking?: string; accessibility?: string; rules?: string; childPolicy?: string; willCall?: string; boxOfficeHours?: string } | null;
+  directions: { apple: string; appleTransit: string; google: string };
+  weather: { label: string; summary: string; temperature: number; unit: string; rainChance?: number; source: string } | null;
+  sources: string[];
+};

@@ -148,3 +148,6 @@ export const unfollowName = (name: string, token: string) =>
   request<{ removed: boolean }>(`/api/follows?name=${encodeURIComponent(name)}`, { method: "DELETE" }, token);
 
 export const getFollowSuggestions = () => request<{ suggestions: { name: string; windows: number }[] }>("/api/follows/suggestions");
+
+export const getCompanion = (eventId: string) => request<import("./types").Companion>(`/api/events/${encodeURIComponent(eventId)}/companion`);
+export const calendarFeedToken = (token: string) => request<{ token: string }>("/api/fan-events/calendar-feed", { method: "POST", body: JSON.stringify({}) }, token);
