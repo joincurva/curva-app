@@ -6,6 +6,7 @@ import { EventCard } from "../../components/event-card";
 import { Body, Button, Heading, Screen, State } from "../../components/ui";
 import { getEvents, getMyEvents, getMySales, getPresales } from "../../lib/api";
 import { useFollows } from "../../lib/follows";
+import { approximateCity } from "../../lib/location";
 import { countdownLabel, daysUntil, showDate } from "../../lib/time";
 import { useSession } from "../../lib/session";
 import { brand, colors, radius, space } from "../../lib/theme";
@@ -33,6 +34,7 @@ export default function Home() {
   const [mine, setMine] = useState<MySale[]>([]);
   const [shows, setShows] = useState<FanEvent[]>([]);
   const { follows } = useFollows();
+  const [near, setNear] = useState("");
   const [watching, setWatching] = useState(0);
   const [soon, setSoon] = useState<PresaleWindow[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
@@ -44,7 +46,10 @@ export default function Home() {
     try {
       const [p, e, m, f] = await Promise.all([
         getPresales(),
-        getEvents(new URLSearchParams({ country: "US", page: "0" })),
+        approximateCity().then((city) => {
+          setNear(city);
+          return getEvents(new URLSearchParams(city ? { location: city, page: "0" } : { country: "US", page: "0" }));
+        }),
         session ? getMySales(session.token).catch(() => ({ watching: 0, sales: [] })) : Promise.resolve({ watching: 0, sales: [] }),
         session ? getMyEvents(session.token).catch(() => ({ events: [] as FanEvent[] })) : Promise.resolve({ events: [] as FanEvent[] }),
       ]);
@@ -147,7 +152,7 @@ export default function Home() {
 
         {events.length ? (
           <View style={s.section}>
-            <Heading>Happening soon</Heading>
+            <Heading>{near ? `Happening near ${near.split(",")[0]}` : "Happening soon"}</Heading>
             {events.map((event) => (
               <View key={event.id} style={{ marginBottom: space.md }}>
                 <EventCard event={event} />

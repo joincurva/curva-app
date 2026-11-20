@@ -42,6 +42,12 @@
         {
           "enableBackgroundRemoteNotifications": false
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Curva uses your location to show concerts, games and shows near you. It's only used for your search and never stored."
+        }
       ]
     ],
     "extra": {

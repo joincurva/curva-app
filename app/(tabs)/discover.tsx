@@ -1,10 +1,12 @@
-import React, { useCallback, useState } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { approximateCity, deviceCity } from "../../lib/location";
 import { EventCard } from "../../components/event-card";
 import { Button, Input, Screen, State, Title, Body } from "../../components/ui";
 import { getEvents } from "../../lib/api";
 import type { Event } from "../../lib/types";
-import { space } from "../../lib/theme";
+import { colors, radius, space } from "../../lib/theme";
 export default function Discover() {
   const [q, setQ] = useState("");
   const [location, setLocation] = useState("");
@@ -14,14 +16,15 @@ export default function Discover() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const search = useCallback(
-    async (next = 0) => {
+    async (next = 0, where?: string) => {
       setLoading(true);
       setError("");
       try {
+        const place = where ?? location;
         const p = new URLSearchParams({
           q,
-          location,
-          country: "US",
+          location: place,
+          ...(place ? {} : { country: "US" }),
           page: String(next),
         });
         const r = await getEvents(p);
@@ -40,6 +43,26 @@ export default function Discover() {
     },
     [q, location],
   );
+  // Open on what's happening near the fan.
+  const started = useRef(false);
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    void approximateCity().then((city) => {
+      if (city) setLocation(city);
+      void search(0, city);
+    });
+  }, [search]);
+  const nearMe = async () => {
+    setLoading(true);
+    const r = await deviceCity().catch(() => ({ city: undefined, denied: false }));
+    setLoading(false);
+    if (r.denied && !r.city) Alert.alert("Location is off", "Turn on location for Curva in Settings, or type a city or ZIP code.");
+    if (r.city) {
+      setLocation(r.city);
+      void search(0, r.city);
+    }
+  };
   return (
     <Screen>
       <FlatList
@@ -52,7 +75,7 @@ export default function Discover() {
           <View style={s.form}>
             <Title>Discover</Title>
             <Body muted>
-              Search Curva’s canonical, provider-backed event catalog.
+              Concerts, games and shows from official listings{location ? ` near ${location}` : ""}.
             </Body>
             <Input
               accessibilityLabel="Artist, team, venue, or event"
@@ -62,12 +85,22 @@ export default function Discover() {
               returnKeyType="search"
               onSubmitEditing={() => search(0)}
             />
-            <Input
-              accessibilityLabel="City or ZIP code"
-              placeholder="City or ZIP code"
-              value={location}
-              onChangeText={setLocation}
-            />
+            <View style={s.whereRow}>
+              <View style={{ flex: 1 }}>
+                <Input
+                  accessibilityLabel="City or ZIP code"
+                  placeholder="City or ZIP code"
+                  value={location}
+                  onChangeText={setLocation}
+                  returnKeyType="search"
+                  onSubmitEditing={() => search(0)}
+                />
+              </View>
+              <Pressable accessibilityRole="button" accessibilityLabel="Use my location" onPress={() => void nearMe()} style={s.nearBtn}>
+                <Ionicons name="navigate" size={18} color={colors.cobalt} />
+                <Text style={s.nearText}>Near me</Text>
+              </Pressable>
+            </View>
             <Button label="Find events" onPress={() => search(0)} />
             {error && (
               <State
@@ -103,6 +136,9 @@ export default function Discover() {
   );
 }
 const s = StyleSheet.create({
+  whereRow: { flexDirection: "row", alignItems: "center", gap: space.sm },
+  nearBtn: { flexDirection: "row", alignItems: "center", gap: 4, minHeight: 48, paddingHorizontal: 12, borderRadius: radius.control, backgroundColor: "#E9EDFE" },
+  nearText: { color: colors.cobalt, fontWeight: "800" },
   content: { padding: space.lg, paddingBottom: 120 },
   form: { gap: space.md, marginBottom: space.xl },
 });
