@@ -38,3 +38,18 @@ export function useNow(startIso?: string) {
   }, [now, startIso]);
   return now;
 }
+
+export function daysUntil(date: string | null, now = new Date()) {
+  if (!date) return undefined;
+  const show = new Date(`${date.slice(0, 10)}T12:00:00`);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12);
+  return Math.round((show.getTime() - today.getTime()) / 86_400_000);
+}
+
+export function countdownLabel(days?: number) {
+  if (days === undefined) return "Date to be confirmed";
+  if (days < 0) return "Hope it was a great show";
+  if (days === 0) return "Show day";
+  if (days === 1) return "Tomorrow";
+  return `In ${days} days`;
+}

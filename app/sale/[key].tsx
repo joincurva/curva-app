@@ -6,6 +6,8 @@ import { TicketHandoff } from "../../components/handoff";
 import { State } from "../../components/ui";
 import { getPresales } from "../../lib/api";
 import { openOfficialTickets } from "../../lib/official";
+import { buyThenAsk } from "../../lib/got-tickets";
+import { useSession } from "../../lib/session";
 import { useReminders } from "../../lib/remind";
 import { brand, colors, radius, space } from "../../lib/theme";
 import { countdown, dayLabel, showDate, useNow } from "../../lib/time";
@@ -31,6 +33,7 @@ export default function SaleScreen() {
   const [error, setError] = useState("");
   const now = useNow(sale?.start);
   const { saved, remind } = useReminders();
+  const { session } = useSession();
 
   useEffect(() => {
     if (sale || !params.title) return;
@@ -120,7 +123,7 @@ export default function SaleScreen() {
                 </Pressable>
               </View>
               {open ? (
-                <TicketHandoff label="Get tickets at face value" onPress={() => void openOfficialTickets(date.officialUrl)} />
+                <TicketHandoff label="Get tickets at face value" onPress={() => void buyThenAsk({ id: date.id, name: date.name, date: date.date, venue: date.venue, city: date.city, officialUrl: date.officialUrl }, session?.token)} />
               ) : (
                 <Pressable
                   accessibilityRole="link"

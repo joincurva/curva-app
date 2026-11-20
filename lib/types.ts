@@ -60,3 +60,20 @@ export type MySale = {
   dates: number;
   eventId?: string;
 };
+
+export type FanEvent = {
+  id: string;
+  provider: string;
+  provider_event_id: string;
+  event_name: string;
+  event_date: string | null;
+  venue_name: string | null;
+  city: string | null;
+  official_url: string | null;
+  lifecycle_state: string;
+  change_kind: string | null;
+  previous_event_date: string | null;
+};
+
+/** States that mean the fan has tickets or is going. */
+export const GOING_STATES = ["MARKED_GOING", "PLANNING", "PURCHASE_CONFIRMED", "EVENT_DAY"] as const;

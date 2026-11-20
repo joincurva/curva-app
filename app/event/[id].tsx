@@ -4,7 +4,9 @@ import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TicketHandoff } from "../../components/handoff";
 import { Body, Title } from "../../components/ui";
-import { officialTicketUrl, openOfficialTickets } from "../../lib/official";
+import { officialTicketUrl } from "../../lib/official";
+import { buyThenAsk } from "../../lib/got-tickets";
+import { useSession } from "../../lib/session";
 import type { Event } from "../../lib/types";
 import { brand, colors, radius, space } from "../../lib/theme";
 
@@ -15,6 +17,7 @@ const TIPS = [
 ] as const;
 
 export default function EventDetail() {
+  const { session } = useSession();
   const params = useLocalSearchParams<{ event?: string }>();
   const event = useMemo(() => {
     try {
@@ -87,7 +90,7 @@ export default function EventDetail() {
       <View style={s.card}>
         <Text style={s.h2}>Tickets</Text>
         {verified ? (
-          <TicketHandoff label="Get tickets at face value" onPress={() => void openOfficialTickets(event.officialUrl)} />
+          <TicketHandoff label="Get tickets at face value" onPress={() => void buyThenAsk({ id: event.id, name: event.name, date: event.date, venue: event.venue, city: event.city, officialUrl: event.officialUrl }, session?.token)} />
         ) : (
           <Text style={s.muted}>
             Curva doesn&apos;t have a verified official page for this event yet. Set a Ticket Alert and we&apos;ll tell you

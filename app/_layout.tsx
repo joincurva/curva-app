@@ -24,6 +24,7 @@ export default function Root() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="event/[id]" options={{ title: "", headerBackTitle: "Back" }} />
           <Stack.Screen name="sale/[key]" options={{ title: "", headerBackTitle: "Back" }} />
+          <Stack.Screen name="show/[id]" options={{ title: "", headerBackTitle: "Back" }} />
           <Stack.Screen
             name="auth"
             options={{ title: "Sign in", presentation: "modal" }}

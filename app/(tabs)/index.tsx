@@ -4,10 +4,11 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { EventCard } from "../../components/event-card";
 import { Body, Button, Heading, Screen, State } from "../../components/ui";
-import { getEvents, getMySales, getPresales } from "../../lib/api";
+import { getEvents, getMyEvents, getMySales, getPresales } from "../../lib/api";
+import { countdownLabel, daysUntil, showDate } from "../../lib/time";
 import { useSession } from "../../lib/session";
 import { brand, colors, radius, space } from "../../lib/theme";
-import type { Event, MySale, PresaleWindow } from "../../lib/types";
+import { GOING_STATES, type Event, type FanEvent, type MySale, type PresaleWindow } from "../../lib/types";
 
 function day(iso: string, timeZone: string) {
   return new Date(iso).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone });
@@ -29,6 +30,7 @@ function SaleRow({ title, label, when, onPress }: { title: string; label: string
 export default function Home() {
   const { session } = useSession();
   const [mine, setMine] = useState<MySale[]>([]);
+  const [shows, setShows] = useState<FanEvent[]>([]);
   const [watching, setWatching] = useState(0);
   const [soon, setSoon] = useState<PresaleWindow[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
@@ -38,11 +40,17 @@ export default function Home() {
     setLoading(true);
     setError("");
     try {
-      const [p, e, m] = await Promise.all([
+      const [p, e, m, f] = await Promise.all([
         getPresales(),
         getEvents(new URLSearchParams({ country: "US", page: "0" })),
         session ? getMySales(session.token).catch(() => ({ watching: 0, sales: [] })) : Promise.resolve({ watching: 0, sales: [] }),
+        session ? getMyEvents(session.token).catch(() => ({ events: [] as FanEvent[] })) : Promise.resolve({ events: [] as FanEvent[] }),
       ]);
+      setShows(
+        f.events
+          .filter((x) => (GOING_STATES as readonly string[]).includes(x.lifecycle_state) && (daysUntil(x.event_date) ?? 0) >= 0)
+          .sort((a, b) => String(a.event_date ?? "9999").localeCompare(String(b.event_date ?? "9999"))),
+      );
       setSoon(p.sales.slice(0, 5));
       setEvents(e.events.slice(0, 6));
       setMine(m.sales);
@@ -73,6 +81,23 @@ export default function Home() {
         </View>
 
         {error ? <State kind="error" message={error} onRetry={() => void load()} /> : null}
+
+        {session && shows.length ? (
+          <View style={s.section}>
+            <Heading>My shows</Heading>
+            <View style={s.card}>
+              {shows.map((show) => (
+                <SaleRow
+                  key={show.id}
+                  title={show.event_name}
+                  label={countdownLabel(daysUntil(show.event_date))}
+                  when={[show.event_date ? showDate(show.event_date) : "", show.venue_name ?? ""].filter(Boolean).join(" · ")}
+                  onPress={() => router.push({ pathname: "/show/[id]", params: { id: show.id, show: JSON.stringify(show) } })}
+                />
+              ))}
+            </View>
+          </View>
+        ) : null}
 
         {session ? (
           <View style={s.section}>

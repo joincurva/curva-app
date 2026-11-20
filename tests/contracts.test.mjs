@@ -13,3 +13,4 @@ test("accessible state and touch controls are present",()=>{const ui=read("compo
 test("presales open in-app sale screens",()=>{const p=read("app/(tabs)/presales.tsx");assert.match(p,/\/sale\/\[key\]/);assert.match(read("app/(tabs)/index.tsx"),/\/sale\/\[key\]/)});
 test("tab icons share one family and size",()=>{const t=read("app/(tabs)/_layout.tsx");assert.match(t,/Ionicons/);assert.match(t,/size=\{24\}/);assert.doesNotMatch(t,/fontSize: 18/)});
 test("app uses Curva brand colors",()=>{const t=read("lib/theme.ts");assert.match(t,/#0B1633/);assert.match(t,/#6F8CFF/);assert.match(t,/#FFD873/)});
+test("buying hands back to Curva and asks about tickets",()=>{const g=read("lib/got-tickets.ts");assert.match(g,/openOfficialTickets/);assert.match(g,/MARKED_GOING|markGoing/);assert.match(read("app/sale/[key].tsx"),/buyThenAsk/);assert.match(read("app/event/[id].tsx"),/buyThenAsk/);assert.match(read("app/(tabs)/index.tsx"),/My shows/)});

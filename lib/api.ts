@@ -103,3 +103,40 @@ export const saveSaleReminder = (
   );
 export const getMySales = (token: string) =>
   request<{ watching: number; sales: import("./types").MySale[] }>("/api/presales/mine", {}, token);
+
+export type GoingInput = {
+  id: string;
+  name: string;
+  date?: string;
+  venue?: string;
+  city?: string;
+  officialUrl?: string;
+};
+
+/** The fan says they got tickets: the show moves to My Shows and sale reminders for it stop. */
+export const markGoing = (event: GoingInput, token: string, sourceReference = "app-ticket-handoff") =>
+  request<{ id: string }>(
+    "/api/fan-events",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        provider: "ticketmaster",
+        providerEventId: event.id,
+        eventName: event.name,
+        eventDate: event.date ? event.date.slice(0, 10) : undefined,
+        venueName: event.venue || undefined,
+        city: event.city || undefined,
+        officialUrl: event.officialUrl || undefined,
+        state: "MARKED_GOING",
+        source: "fan-declared",
+        sourceReference,
+      }),
+    },
+    token,
+  );
+
+export const getMyEvents = (token: string) =>
+  request<{ events: import("./types").FanEvent[] }>("/api/fan-events", {}, token);
+
+export const removeMyEvent = (id: string, token: string) =>
+  request<{ removed: boolean }>(`/api/fan-events?id=${encodeURIComponent(id)}`, { method: "DELETE" }, token);
