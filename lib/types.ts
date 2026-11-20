@@ -42,6 +42,8 @@ export type PresaleDate = {
 export type PresaleWindow = {
   key: string;
   title: string;
+  /** The artist, team or show to follow for this sale. */
+  performer?: string;
   label: string;
   kind: "presale" | "onsale";
   start: string;
@@ -77,3 +79,5 @@ export type FanEvent = {
 
 /** States that mean the fan has tickets or is going. */
 export const GOING_STATES = ["MARKED_GOING", "PLANNING", "PURCHASE_CONFIRMED", "EVENT_DAY"] as const;
+
+export type Follow = { name: string; name_key: string; kind: "artist" | "team" | "show" | "venue"; created_at: string };

@@ -14,6 +14,7 @@ import {
 import { request } from "../../lib/api";
 import { turnOffSaleAlerts, turnOnSaleAlerts } from "../../lib/push";
 import { useSession } from "../../lib/session";
+import { useFollows } from "../../lib/follows";
 import { brand, space } from "../../lib/theme";
 type Membership = { plan: "free" | "plus" | "premier"; status: string };
 export default function Account() {
@@ -63,6 +64,7 @@ export default function Account() {
       setBusy(false);
     }
   };
+  const { follows, unfollow } = useFollows();
   const deletion = () =>
     Alert.alert(
       "Permanently delete account?",
@@ -118,6 +120,17 @@ export default function Account() {
                 New native purchases are disabled. Existing paid entitlements
                 continue to work.
               </Body>
+            </Card>
+            <Card>
+              <Heading>Following</Heading>
+              <Body muted>
+                {follows.length
+                  ? "Curva alerts you before every presale and on-sale for these, including dates announced later."
+                  : "Follow an artist, team or show from any sale and Curva covers every presale and on-sale for you."}
+              </Body>
+              {follows.map((f) => (
+                <Button key={f.name_key} variant="secondary" label={`Unfollow ${f.name}`} disabled={busy} onPress={() => void unfollow(f.name)} />
+              ))}
             </Card>
             <Card>
               <Heading>Notifications</Heading>

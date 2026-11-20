@@ -3,6 +3,7 @@ import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-nati
 import { Stack, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TicketHandoff } from "../../components/handoff";
+import { FollowButton } from "../../components/follow-button";
 import { State } from "../../components/ui";
 import { getPresales } from "../../lib/api";
 import { openOfficialTickets } from "../../lib/official";
@@ -88,6 +89,9 @@ export default function SaleScreen() {
         <View style={s.clock} accessibilityLiveRegion="polite">
           <Ionicons name={open ? "flash" : "time-outline"} size={18} color={brand.gold} />
           <Text style={s.clockText}>{countdown(sale.start, now)}</Text>
+        </View>
+        <View style={{ marginTop: space.sm }}>
+          <FollowButton name={sale.performer ?? sale.title} onDark />
         </View>
       </View>
 

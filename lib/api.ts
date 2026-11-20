@@ -140,3 +140,9 @@ export const getMyEvents = (token: string) =>
 
 export const removeMyEvent = (id: string, token: string) =>
   request<{ removed: boolean }>(`/api/fan-events?id=${encodeURIComponent(id)}`, { method: "DELETE" }, token);
+
+export const getFollows = (token: string) => request<{ follows: import("./types").Follow[] }>("/api/follows", {}, token);
+export const followName = (name: string, token: string, kind: import("./types").Follow["kind"] = "artist") =>
+  request<{ following: boolean; name: string }>("/api/follows", { method: "POST", body: JSON.stringify({ name, kind }) }, token);
+export const unfollowName = (name: string, token: string) =>
+  request<{ removed: boolean }>(`/api/follows?name=${encodeURIComponent(name)}`, { method: "DELETE" }, token);

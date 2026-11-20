@@ -3,6 +3,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { State } from "../../components/ui";
+import { FollowButton } from "../../components/follow-button";
 import { getPresales } from "../../lib/api";
 import { brand, colors, radius, space } from "../../lib/theme";
 import { countdown, dayLabel, useNow } from "../../lib/time";
@@ -37,6 +38,7 @@ export default function PerformerPresales() {
               {name.replace(/\b\w/g, (c) => c.toUpperCase())}
             </Text>
             <Text style={s.sub}>Official presales and on-sales in the next 30 days.</Text>
+            <FollowButton name={sales?.[0]?.performer ?? name.replace(/\b\w/g, (c) => c.toUpperCase())} onDark />
           </View>
         }
         renderItem={({ item }) => (

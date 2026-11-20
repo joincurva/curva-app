@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { reportAppOpen } from "../lib/install";
-import { Stack } from "expo-router";
+import * as Notifications from "expo-notifications";
+import { Stack, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SessionProvider } from "../lib/session";
 import { colors } from "../lib/theme";
@@ -8,6 +9,12 @@ import { AppErrorBoundary } from "../components/error-boundary";
 export default function Root() {
   useEffect(() => {
     void reportAppOpen();
+    // Tapping a follow alert opens that artist's or team's sales in Curva.
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const performer = response.notification.request.content.data?.performer;
+      if (typeof performer === "string" && /^[a-z0-9-]{2,80}$/.test(performer)) router.push(`/presales/${performer}`);
+    });
+    return () => sub.remove();
   }, []);
   return (
     <AppErrorBoundary>
