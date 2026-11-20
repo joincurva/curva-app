@@ -100,8 +100,6 @@ export default function EventDetail() {
       </View>
 
       <SoldOutHelp eventId={event.id} eventName={event.name} venue={event.venue} city={event.city} />
-        ))}
-      </View>
 
       <Text style={s.foot}>
         Event details from Ticketmaster&apos;s official listing. Curva doesn&apos;t sell tickets and isn&apos;t affiliated with
