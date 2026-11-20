@@ -151,3 +151,6 @@ export const getFollowSuggestions = () => request<{ suggestions: { name: string;
 
 export const getCompanion = (eventId: string) => request<import("./types").Companion>(`/api/events/${encodeURIComponent(eventId)}/companion`);
 export const calendarFeedToken = (token: string) => request<{ token: string }>("/api/fan-events/calendar-feed", { method: "POST", body: JSON.stringify({}) }, token);
+
+export const getPerformer = (slug: string) => request<import("./types").Performer>(`/api/performers/${encodeURIComponent(slug)}`);
+export const performerSlug = (name: string) => name.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");

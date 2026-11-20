@@ -1,84 +1,117 @@
-import React, { useEffect, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { State } from "../../components/ui";
 import { FollowButton } from "../../components/follow-button";
-import { getPresales } from "../../lib/api";
+import { getPerformer } from "../../lib/api";
 import { brand, colors, radius, space } from "../../lib/theme";
-import { countdown, dayLabel, useNow } from "../../lib/time";
-import type { PresaleWindow } from "../../lib/types";
+import { countdown, dayLabel, showDate, useNow } from "../../lib/time";
+import type { Event, Performer, PerformerDate } from "../../lib/types";
 
-/** joincurva.com/presales/<performer> links open here when the app is installed. */
-export default function PerformerPresales() {
+/** Artist, team or show hub: follow, official sales, the dates nearest you, and every date. */
+export default function PerformerHub() {
   const { performer = "" } = useLocalSearchParams<{ performer: string }>();
-  const name = decodeURIComponent(performer).replace(/-/g, " ");
-  const [sales, setSales] = useState<PresaleWindow[] | undefined>();
+  const [data, setData] = useState<Performer>();
   const [error, setError] = useState("");
   const now = useNow();
   useEffect(() => {
     let live = true;
-    getPresales(name)
-      .then((r) => live && setSales(r.sales))
-      .catch((x) => live && setError(x instanceof Error ? x.message : "Presales could not load."));
+    getPerformer(performer)
+      .then((r) => live && setData(r))
+      .catch(() => live && setError("We couldn't find upcoming dates for this one yet."));
     return () => {
       live = false;
     };
-  }, [name]);
+  }, [performer]);
+  const nearest = useMemo(
+    () => (data?.dates ?? []).filter((d) => d.milesAway != null).sort((a, b) => (a.milesAway ?? 0) - (b.milesAway ?? 0)).slice(0, 3),
+    [data],
+  );
+  const fallbackName = decodeURIComponent(performer).replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  const name = data?.name ?? fallbackName;
+  const openDate = (d: PerformerDate) => {
+    const event: Event = { id: d.id, name: d.name, category: "", date: d.date, time: d.time, venue: d.venue, city: d.city, region: d.region, officialUrl: d.officialUrl, saleStatus: d.saleStatus, source: "Ticketmaster" };
+    router.push({ pathname: "/event/[id]", params: { id: d.id, event: JSON.stringify(event) } });
+  };
   return (
-    <View style={s.page}>
+    <ScrollView style={s.page} contentContainerStyle={s.content}>
       <Stack.Screen options={{ title: "", headerBackTitle: "Back" }} />
-      <FlatList
-        data={sales ?? []}
-        keyExtractor={(x) => x.key}
-        contentContainerStyle={s.content}
-        ListHeaderComponent={
-          <View style={s.band}>
-            <Text style={s.title} accessibilityRole="header">
-              {name.replace(/\b\w/g, (c) => c.toUpperCase())}
-            </Text>
-            <Text style={s.sub}>Official presales and on-sales in the next 30 days.</Text>
-            <FollowButton name={sales?.[0]?.performer ?? name.replace(/\b\w/g, (c) => c.toUpperCase())} onDark />
-          </View>
-        }
-        renderItem={({ item }) => (
-          <Pressable
-            accessibilityRole="button"
-            onPress={() =>
-              router.push({ pathname: "/sale/[key]", params: { key: item.key, title: item.title, sale: JSON.stringify(item) } })
-            }
-            style={({ pressed }) => [s.row, pressed && { opacity: 0.7 }]}
-          >
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text style={s.rowTitle}>{item.label}</Text>
-              <Text style={s.rowMeta}>
-                {dayLabel(item.start, item.timeZone)} · {item.time} · {countdown(item.start, now)}
-              </Text>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.muted} />
-          </Pressable>
-        )}
-        ListEmptyComponent={
-          error ? (
-            <State kind="error" message={error} />
-          ) : !sales ? (
-            <State kind="loading" message="Loading official sale times…" />
-          ) : (
-            <State kind="empty" message="No official sales in the next 30 days. Check Presales for everything else." />
-          )
-        }
-      />
-    </View>
+      <View style={s.band}>
+        <Text style={s.title} accessibilityRole="header">{name}</Text>
+        <Text style={s.sub}>
+          {data ? `${data.dates.length} upcoming date${data.dates.length === 1 ? "" : "s"} on official listings` : "Official dates and sales"}
+        </Text>
+        <FollowButton name={name} onDark />
+      </View>
+
+      {error ? <State kind="error" message={error} /> : !data ? <State kind="loading" message="Loading official dates…" /> : null}
+
+      {data?.sales.length ? (
+        <View style={s.section}>
+          <Text style={s.h2}>Official sales</Text>
+          {data.sales.map((sale) => (
+            <Pressable
+              key={sale.key}
+              accessibilityRole="button"
+              onPress={() => router.push({ pathname: "/sale/[key]", params: { key: sale.key, title: sale.title, sale: JSON.stringify(sale) } })}
+              style={s.row}
+            >
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={s.rowTitle}>{sale.label}</Text>
+                <Text style={s.rowMeta}>{dayLabel(sale.start, sale.timeZone)} · {sale.time} · {countdown(sale.start, now)}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+
+      {nearest.length ? (
+        <View style={s.section}>
+          <Text style={s.h2}>Nearest to you</Text>
+          {nearest.map((d) => <DateRow key={d.id} d={d} onPress={() => openDate(d)} />)}
+        </View>
+      ) : null}
+
+      {data?.dates.length ? (
+        <View style={s.section}>
+          <Text style={s.h2}>All dates</Text>
+          {data.dates.map((d) => <DateRow key={d.id} d={d} onPress={() => openDate(d)} />)}
+        </View>
+      ) : data ? (
+        <State kind="empty" message={`No upcoming dates listed right now. Follow ${name} and Curva tells you the moment new dates are announced.`} />
+      ) : null}
+
+      <Text style={s.foot}>From Ticketmaster&apos;s official listings. Curva isn&apos;t affiliated with {name}.</Text>
+    </ScrollView>
+  );
+}
+
+function DateRow({ d, onPress }: { d: PerformerDate; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" onPress={onPress} style={s.row}>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={s.rowTitle}>{showDate(d.date)}</Text>
+        <Text style={s.rowMeta}>
+          {d.venue}, {d.city}{d.region ? `, ${d.region}` : ""}{d.milesAway != null ? ` · ${d.milesAway} mi away` : ""}
+        </Text>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+    </Pressable>
   );
 }
 
 const s = StyleSheet.create({
   page: { flex: 1, backgroundColor: colors.canvas },
-  content: { padding: space.lg, gap: space.md, paddingBottom: 60 },
-  band: { backgroundColor: brand.navy, borderRadius: radius.card, padding: space.xl, gap: space.sm, borderBottomWidth: 4, borderBottomColor: brand.gold, marginBottom: space.sm },
-  title: { color: "white", fontSize: 26, fontWeight: "800", letterSpacing: -0.5 },
+  content: { padding: space.lg, gap: space.lg, paddingBottom: 60 },
+  band: { backgroundColor: brand.navy, borderRadius: radius.card, padding: space.xl, gap: space.sm, borderBottomWidth: 4, borderBottomColor: brand.gold },
+  title: { color: "white", fontSize: 28, fontWeight: "800", letterSpacing: -0.5 },
   sub: { color: brand.mist, fontSize: 15, lineHeight: 21 },
+  section: { gap: space.sm },
+  h2: { fontSize: 19, fontWeight: "800", color: colors.ink },
   row: { backgroundColor: colors.surface, borderRadius: radius.card, borderWidth: 1, borderColor: colors.border, padding: space.lg, flexDirection: "row", alignItems: "center", gap: space.md },
   rowTitle: { fontSize: 16, fontWeight: "700", color: colors.ink },
   rowMeta: { fontSize: 13, color: colors.muted },
+  foot: { fontSize: 12, lineHeight: 17, color: colors.muted, textAlign: "center" },
 });

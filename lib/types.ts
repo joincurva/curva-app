@@ -90,3 +90,6 @@ export type Companion = {
   weather: { label: string; summary: string; temperature: number; unit: string; rainChance?: number; source: string } | null;
   sources: string[];
 };
+
+export type PerformerDate = { id: string; name: string; date: string; time?: string; venue: string; city: string; region?: string; officialUrl?: string; saleStatus: string; milesAway?: number };
+export type Performer = { name: string; slug: string; dates: PerformerDate[]; sales: PresaleWindow[] };

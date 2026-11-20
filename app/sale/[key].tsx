@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TicketHandoff } from "../../components/handoff";
 import { FollowButton } from "../../components/follow-button";
 import { State } from "../../components/ui";
-import { getPresales } from "../../lib/api";
+import { getPresales, performerSlug } from "../../lib/api";
 import { openOfficialTickets } from "../../lib/official";
 import { buyThenAsk } from "../../lib/got-tickets";
 import { useSession } from "../../lib/session";
@@ -92,6 +92,9 @@ export default function SaleScreen() {
         </View>
         <View style={{ marginTop: space.sm }}>
           <FollowButton name={sale.performer ?? sale.title} onDark />
+          <Pressable accessibilityRole="link" onPress={() => router.push(`/presales/${performerSlug(sale.performer ?? sale.title)}`)} style={{ marginTop: space.sm }}>
+            <Text style={{ color: brand.mist, fontWeight: "700" }}>See every {sale.performer ?? sale.title} date</Text>
+          </Pressable>
         </View>
       </View>
 

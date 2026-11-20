@@ -4,7 +4,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { approximateCity, deviceCity } from "../../lib/location";
 import { EventCard } from "../../components/event-card";
 import { Button, Input, Screen, State, Title, Body } from "../../components/ui";
-import { getEvents } from "../../lib/api";
+import { getEvents, getPerformer, performerSlug } from "../../lib/api";
+import { router } from "expo-router";
 import type { Event } from "../../lib/types";
 import { colors, radius, space } from "../../lib/theme";
 export default function Discover() {
@@ -15,6 +16,7 @@ export default function Discover() {
   const [more, setMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [artist, setArtist] = useState<{ name: string; slug: string; count: number }>();
   const search = useCallback(
     async (next = 0, where?: string) => {
       setLoading(true);
@@ -27,6 +29,11 @@ export default function Discover() {
           ...(place ? {} : { country: "US" }),
           page: String(next),
         });
+        if (!next) {
+          setArtist(undefined);
+          const slug = performerSlug(q.trim());
+          if (slug.length >= 2) void getPerformer(slug).then((a) => setArtist({ name: a.name, slug: a.slug, count: a.dates.length })).catch(() => undefined);
+        }
         const r = await getEvents(p);
         setEvents((v) => (next ? [...v, ...r.events] : r.events));
         setPage(next);
@@ -102,6 +109,16 @@ export default function Discover() {
               </Pressable>
             </View>
             <Button label="Find events" onPress={() => search(0)} />
+            {artist ? (
+              <Pressable accessibilityRole="button" onPress={() => router.push(`/presales/${artist.slug}`)} style={s.artist}>
+                <Ionicons name="person-circle" size={34} color={colors.cobalt} />
+                <View style={{ flex: 1 }}>
+                  <Text style={s.artistName}>{artist.name}</Text>
+                  <Text style={s.artistMeta}>{artist.count} upcoming dates · Follow and see every sale</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+              </Pressable>
+            ) : null}
             {error && (
               <State
                 kind="error"
@@ -136,6 +153,9 @@ export default function Discover() {
   );
 }
 const s = StyleSheet.create({
+  artist: { flexDirection: "row", alignItems: "center", gap: space.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.card, padding: space.md },
+  artistName: { fontSize: 17, fontWeight: "800", color: colors.ink },
+  artistMeta: { fontSize: 13, color: colors.muted },
   whereRow: { flexDirection: "row", alignItems: "center", gap: space.sm },
   nearBtn: { flexDirection: "row", alignItems: "center", gap: 4, minHeight: 48, paddingHorizontal: 12, borderRadius: radius.control, backgroundColor: "#E9EDFE" },
   nearText: { color: colors.cobalt, fontWeight: "800" },

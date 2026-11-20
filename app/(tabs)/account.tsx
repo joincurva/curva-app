@@ -11,7 +11,7 @@ import {
   State,
   Title,
 } from "../../components/ui";
-import { request } from "../../lib/api";
+import { performerSlug, request } from "../../lib/api";
 import { turnOffSaleAlerts, turnOnSaleAlerts } from "../../lib/push";
 import { useSession } from "../../lib/session";
 import { useFollows } from "../../lib/follows";
@@ -129,7 +129,10 @@ export default function Account() {
                   : "Follow an artist, team or show from any sale and Curva covers every presale and on-sale for you."}
               </Body>
               {follows.map((f) => (
-                <Button key={f.name_key} variant="secondary" label={`Unfollow ${f.name}`} disabled={busy} onPress={() => void unfollow(f.name)} />
+                <React.Fragment key={f.name_key}>
+                  <Button label={`${f.name}: dates and sales`} onPress={() => router.push(`/presales/${performerSlug(f.name)}`)} />
+                  <Button variant="secondary" label={`Unfollow ${f.name}`} disabled={busy} onPress={() => void unfollow(f.name)} />
+                </React.Fragment>
               ))}
             </Card>
             <Card>
