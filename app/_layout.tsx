@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { reportAppOpen } from "../lib/install";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SessionProvider } from "../lib/session";
 import { colors } from "../lib/theme";
 import { AppErrorBoundary } from "../components/error-boundary";
 export default function Root() {
+  useEffect(() => {
+    void reportAppOpen();
+  }, []);
   return (
     <AppErrorBoundary>
       <SessionProvider>
