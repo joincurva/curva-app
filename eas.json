@@ -5,10 +5,7 @@
   },
   "build": {
     "production": {
-      "autoIncrement": true,
-      "ios": {
-        "image": "latest"
-      }
+      "autoIncrement": true
     }
   },
   "submit": {
