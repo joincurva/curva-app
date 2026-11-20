@@ -13,22 +13,47 @@
       "buildNumber": "1",
       "supportsTablet": false,
       "deploymentTarget": "16.4",
-      "associatedDomains": ["applinks:joincurva.com"],
-      "infoPlist": { "UIBackgroundModes": [], "ITSAppUsesNonExemptEncryption": false },
-      "privacyManifests": { "NSPrivacyAccessedAPITypes": [] }
+      "associatedDomains": [
+        "applinks:joincurva.com",
+        "webcredentials:joincurva.com"
+      ],
+      "infoPlist": {
+        "UIBackgroundModes": [],
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyAccessedAPITypes": []
+      }
     },
     "plugins": [
       "expo-router",
-      ["expo-splash-screen", { "image": "./assets/splash.png", "imageWidth": 180, "resizeMode": "contain", "backgroundColor": "#0B1633" }],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#0B1633"
+        }
+      ],
       "expo-secure-store",
-      ["expo-notifications", { "enableBackgroundRemoteNotifications": false }]
+      [
+        "expo-notifications",
+        {
+          "enableBackgroundRemoteNotifications": false
+        }
+      ]
     ],
     "extra": {
       "environment": "production",
       "apiUrl": "https://joincurva.com",
-      "eas": { "projectId": "b7a63ad8-18de-479a-b1a9-9ea0a8c1a7c1" },
+      "eas": {
+        "projectId": "b7a63ad8-18de-479a-b1a9-9ea0a8c1a7c1"
+      },
       "pushDeliveryEnabled": true
     },
-    "experiments": { "typedRoutes": true }
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }
