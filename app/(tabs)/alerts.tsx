@@ -11,6 +11,7 @@ import {
   Title,
 } from "../../components/ui";
 import { request } from "../../lib/api";
+import { SignupList } from "../../components/signup-list";
 import { useSession } from "../../lib/session";
 import type { Alert } from "../../lib/types";
 import { space } from "../../lib/theme";
@@ -110,8 +111,8 @@ export default function Alerts() {
         <View style={s.content}>
           <Title>Ticket Alerts</Title>
           <Body muted>
-            Sign in to create and manage monitoring tied to your Curva
-            membership.
+            Sign in and Curva watches official listings for you, then tells you
+            when tickets are released.
           </Body>
           <Button label="Sign in" onPress={() => router.push("/auth")} />
         </View>
@@ -127,9 +128,9 @@ export default function Alerts() {
           <View style={s.form}>
             <Title>Ticket Alerts</Title>
             <Body muted>
-              Email remains the canonical alert channel. Push delivery is not
-              active.
+              Tell Curva what you want and we&apos;ll email you when the official seller releases tickets.
             </Body>
+            <SignupList />
             <Input
               accessibilityLabel="Event or artist to monitor"
               placeholder="Event or artist"

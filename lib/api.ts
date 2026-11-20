@@ -154,3 +154,9 @@ export const calendarFeedToken = (token: string) => request<{ token: string }>("
 
 export const getPerformer = (slug: string) => request<import("./types").Performer>(`/api/performers/${encodeURIComponent(slug)}`);
 export const performerSlug = (name: string) => name.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+export const getSignups = (token: string) => request<{ signups: import("./types").PresaleSignup[] }>("/api/presale-signups", {}, token);
+export const addSignup = (input: { title: string; providerEventId?: string; signupUrl?: string; signupClosesAt: string; presaleOpensAt?: string }, token: string) =>
+  request<{ signup: import("./types").PresaleSignup }>("/api/presale-signups", { method: "POST", body: JSON.stringify(input) }, token);
+export const setSignupStatus = (id: string, status: import("./types").PresaleSignup["status"], token: string) =>
+  request<unknown>("/api/presale-signups", { method: "PATCH", body: JSON.stringify({ id, status }) }, token);

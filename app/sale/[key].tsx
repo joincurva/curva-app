@@ -4,6 +4,8 @@ import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TicketHandoff } from "../../components/handoff";
 import { FollowButton } from "../../components/follow-button";
+import { SignupTracker } from "../../components/signup-tracker";
+import { SoldOutHelp } from "../../components/sold-out";
 import { State } from "../../components/ui";
 import { getPresales, performerSlug } from "../../lib/api";
 import { openOfficialTickets } from "../../lib/official";
@@ -101,6 +103,7 @@ export default function SaleScreen() {
       <View style={s.card}>
         <Text style={s.h2}>Dates in this sale</Text>
         <Text style={s.muted}>Tap Remind me and Curva nudges you the day before and right before the queue opens.</Text>
+        {sale.kind === "presale" && !open ? <SignupTracker title={`${sale.performer ?? sale.title} ${sale.label.replace(/^Presale:\s*/i, "")}`} providerEventId={sale.dates[0]?.id} presaleOpensAt={sale.start} /> : null}
         {sale.dates.map((date: PresaleDate) => {
           const state = saved[date.id];
           return (
@@ -155,6 +158,8 @@ export default function SaleScreen() {
           </View>
         ))}
       </View>
+
+      {open ? <SoldOutHelp eventId={sale.dates[0]?.id} eventName={sale.performer ?? sale.title} venue={sale.dates[0]?.venue} city={sale.dates[0]?.city} /> : null}
 
       <Text style={s.foot}>
         Times are the venue&apos;s local time, from Ticketmaster&apos;s official listing. Curva doesn&apos;t sell tickets and

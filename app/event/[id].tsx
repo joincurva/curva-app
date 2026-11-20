@@ -3,6 +3,7 @@ import { Image, Pressable, ScrollView, Share, StyleSheet, Text, View } from "rea
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TicketHandoff } from "../../components/handoff";
+import { SoldOutHelp } from "../../components/sold-out";
 import { Body, Title } from "../../components/ui";
 import { officialTicketUrl } from "../../lib/official";
 import { buyThenAsk } from "../../lib/got-tickets";
@@ -10,11 +11,6 @@ import { useSession } from "../../lib/session";
 import type { Event } from "../../lib/types";
 import { brand, colors, radius, space } from "../../lib/theme";
 
-const TIPS = [
-  { icon: "pricetag-outline", text: "Face value is the price on the official page. Listings far above it are usually resellers." },
-  { icon: "time-outline", text: "Sold out? Set a Ticket Alert. Official releases and fan-to-fan resale at face value often appear later." },
-  { icon: "shield-checkmark-outline", text: "Only buy through the official seller's page or app, never from links in DMs or comments." },
-] as const;
 
 export default function EventDetail() {
   const { session } = useSession();
@@ -103,13 +99,7 @@ export default function EventDetail() {
         </Pressable>
       </View>
 
-      <View style={s.card}>
-        <Text style={s.h2}>Buying smart</Text>
-        {TIPS.map((tip) => (
-          <View key={tip.text} style={s.tip}>
-            <Ionicons name={tip.icon} size={20} color={colors.cobalt} />
-            <Text style={s.tipText}>{tip.text}</Text>
-          </View>
+      <SoldOutHelp eventId={event.id} eventName={event.name} venue={event.venue} city={event.city} />
         ))}
       </View>
 

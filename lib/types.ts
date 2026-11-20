@@ -93,3 +93,5 @@ export type Companion = {
 
 export type PerformerDate = { id: string; name: string; date: string; time?: string; venue: string; city: string; region?: string; officialUrl?: string; saleStatus: string; milesAway?: number };
 export type Performer = { name: string; slug: string; dates: PerformerDate[]; sales: PresaleWindow[] };
+
+export type PresaleSignup = { id: string; title: string; provider_event_id: string | null; signup_url: string | null; signup_closes_at: string | null; presale_opens_at: string | null; status: "to-do" | "registered" | "got-code"; note: string | null };
