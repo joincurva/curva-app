@@ -20,7 +20,7 @@ export default function NativeAuthExchange() {
     })
       .then(async (result) => {
         await setSession({ token: result.sessionToken, user: result.user });
-        router.replace("/(tabs)");
+        router.replace("/welcome");
       })
       .catch((x) =>
         setError(

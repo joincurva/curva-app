@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { EventCard } from "../../components/event-card";
 import { Body, Button, Heading, Screen, State } from "../../components/ui";
 import { getEvents, getMyEvents, getMySales, getPresales } from "../../lib/api";
+import { useFollows } from "../../lib/follows";
 import { countdownLabel, daysUntil, showDate } from "../../lib/time";
 import { useSession } from "../../lib/session";
 import { brand, colors, radius, space } from "../../lib/theme";
@@ -31,6 +32,7 @@ export default function Home() {
   const { session } = useSession();
   const [mine, setMine] = useState<MySale[]>([]);
   const [shows, setShows] = useState<FanEvent[]>([]);
+  const { follows } = useFollows();
   const [watching, setWatching] = useState(0);
   const [soon, setSoon] = useState<PresaleWindow[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
@@ -81,6 +83,13 @@ export default function Home() {
         </View>
 
         {error ? <State kind="error" message={error} onRetry={() => void load()} /> : null}
+
+        {session && !follows.length ? (
+          <Pressable accessibilityRole="button" onPress={() => router.push("/welcome")} style={s.followCard}>
+            <Text style={s.followTitle}>Follow who you love</Text>
+            <Text style={s.followSub}>One tap per artist, team or show and Curva covers every presale and on-sale.</Text>
+          </Pressable>
+        ) : null}
 
         {session && shows.length ? (
           <View style={s.section}>
@@ -154,6 +163,9 @@ export default function Home() {
 }
 
 const s = StyleSheet.create({
+  followCard: { backgroundColor: "#FFD873", borderRadius: 16, padding: 18, gap: 4 },
+  followTitle: { color: "#0B1633", fontSize: 18, fontWeight: "800" },
+  followSub: { color: "#0B1633", fontSize: 15, lineHeight: 21 },
   content: { padding: space.lg, paddingBottom: 120, gap: space.xl },
   band: { backgroundColor: brand.navy, borderRadius: radius.card, padding: space.xl, gap: space.sm, borderBottomWidth: 4, borderBottomColor: brand.gold },
   brand: { color: "white", fontSize: 22, fontWeight: "700", letterSpacing: 0.5 },

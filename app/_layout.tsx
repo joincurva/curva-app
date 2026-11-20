@@ -13,6 +13,7 @@ export default function Root() {
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
       const performer = response.notification.request.content.data?.performer;
       if (typeof performer === "string" && /^[a-z0-9-]{2,80}$/.test(performer)) router.push(`/presales/${performer}`);
+      else if (response.notification.request.content.data?.show) router.push("/(tabs)");
     });
     return () => sub.remove();
   }, []);
@@ -32,6 +33,7 @@ export default function Root() {
           <Stack.Screen name="event/[id]" options={{ title: "", headerBackTitle: "Back" }} />
           <Stack.Screen name="sale/[key]" options={{ title: "", headerBackTitle: "Back" }} />
           <Stack.Screen name="show/[id]" options={{ title: "", headerBackTitle: "Back" }} />
+          <Stack.Screen name="welcome" options={{ headerShown: false, gestureEnabled: false }} />
           <Stack.Screen
             name="auth"
             options={{ title: "Sign in", presentation: "modal" }}

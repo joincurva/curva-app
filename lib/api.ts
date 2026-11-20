@@ -146,3 +146,5 @@ export const followName = (name: string, token: string, kind: import("./types").
   request<{ following: boolean; name: string }>("/api/follows", { method: "POST", body: JSON.stringify({ name, kind }) }, token);
 export const unfollowName = (name: string, token: string) =>
   request<{ removed: boolean }>(`/api/follows?name=${encodeURIComponent(name)}`, { method: "DELETE" }, token);
+
+export const getFollowSuggestions = () => request<{ suggestions: { name: string; windows: number }[] }>("/api/follows/suggestions");
