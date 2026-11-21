@@ -16,10 +16,19 @@ import { turnOffSaleAlerts, turnOnSaleAlerts } from "../../lib/push";
 import { useSession } from "../../lib/session";
 import { useFollows } from "../../lib/follows";
 import { brand, space } from "../../lib/theme";
-type Membership = { plan: "free" | "plus" | "premier"; status: string };
+type Membership = { plan: "free" | "plus" | "premier"; status: string; cancelAtPeriodEnd?: boolean; currentPeriodEnd?: string };
+
+/** Plain words for the fan, never raw billing states. */
+function membershipLabel({ plan, cancelAtPeriodEnd, currentPeriodEnd }: Membership, trialEndsAt?: string) {
+  const day = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  if (plan === "free") return trialEndsAt ? `Curva Plus free trial, through ${day(trialEndsAt)}` : "Curva Free";
+  const name = plan === "plus" ? "Curva Plus" : "Curva Premier";
+  return cancelAtPeriodEnd && currentPeriodEnd ? `${name}, through ${day(currentPeriodEnd)}` : name;
+}
 export default function Account() {
   const { session, setSession } = useSession();
   const [membership, setMembership] = useState<Membership>();
+  const [trialEndsAt, setTrialEndsAt] = useState<string>();
   const [push, setPush] = useState(
     "Get an alert on this iPhone the day before a sale and right before the queue opens. Email reminders keep working either way.",
   );
@@ -28,12 +37,12 @@ export default function Account() {
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (session)
-      request<{ membership: Membership }>(
+      request<{ membership: Membership; trialEndsAt?: string }>(
         "/api/mobile/account",
         {},
         session.token,
       )
-        .then((r) => setMembership(r.membership))
+        .then((r) => { setMembership(r.membership); setTrialEndsAt(r.trialEndsAt); })
         .catch((error) => {
           setMembership(undefined);
           setAccountError(
@@ -113,12 +122,12 @@ export default function Account() {
               <Heading>Membership</Heading>
               <Body>
                 {membership
-                  ? `${membership.plan[0].toUpperCase()}${membership.plan.slice(1)} · ${membership.status}`
+                  ? membershipLabel(membership, trialEndsAt)
                   : "Checking your Curva membership…"}
               </Body>
               <Body muted>
-                New native purchases are disabled. Existing paid entitlements
-                continue to work.
+                Curva Free is yours to keep. Your membership is the same here
+                and on joincurva.com.
               </Body>
             </Card>
             <Card>
