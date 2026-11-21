@@ -8,6 +8,9 @@ export const followKey = (name: string) => name.normalize("NFKC").toLowerCase().
 
 // One shared list for every screen, so following on one screen shows everywhere.
 let cache: Follow[] | undefined;
+// Whose list the cache holds ("" when signed out), so it reloads once the saved session has loaded
+// and again after signing in or out, instead of keeping an empty list fetched before the session was ready.
+let cacheOwner: string | undefined;
 const listeners = new Set<(f: Follow[]) => void>();
 const publish = (f: Follow[]) => {
   cache = f;
@@ -15,7 +18,7 @@ const publish = (f: Follow[]) => {
 };
 
 export function useFollows() {
-  const { session } = useSession();
+  const { session, ready } = useSession();
   const [follows, setFollows] = useState<Follow[]>(cache ?? []);
   useEffect(() => {
     listeners.add(setFollows);
@@ -27,8 +30,12 @@ export function useFollows() {
     if (r) publish(r.follows);
   }, [session]);
   useEffect(() => {
-    if (cache === undefined) void refresh();
-  }, [refresh]);
+    if (!ready) return;
+    const owner = session?.token ?? "";
+    if (cacheOwner === owner && cache !== undefined) return;
+    cacheOwner = owner;
+    void refresh();
+  }, [ready, session, refresh]);
   const isFollowing = (name: string) => follows.some((f) => f.name_key === followKey(name));
   const follow = async (name: string) => {
     if (!session) throw new Error("Sign in to follow.");
