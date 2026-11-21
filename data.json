@@ -1,0 +1,91 @@
+{
+  "followNames": [
+    "Noah Kahan",
+    "Atlanta Braves",
+    "Dallas Mavericks",
+    "Dallas Stars",
+    "Oklahoma City Thunder",
+    "Seattle Mariners"
+  ],
+  "mySales": [
+    {
+      "key": "atlanta braves|General on-sale|1795276800000",
+      "title": "Atlanta Braves",
+      "label": "General on-sale",
+      "kind": "onsale",
+      "start": "2026-11-21T16:00:00.000Z",
+      "time": "11:00 AM ET",
+      "timeZone": "America/New_York",
+      "dates": 6,
+      "eventId": "vvG1VZ_4hzGu0Q"
+    },
+    {
+      "key": "seattle mariners|Presale: Mariners Mail Subscriber Presale|1795456800000",
+      "title": "Seattle Mariners",
+      "label": "Presale: Mariners Mail Subscriber Presale",
+      "kind": "presale",
+      "start": "2026-11-23T18:00:00.000Z",
+      "time": "10:00 AM PT",
+      "timeZone": "America/Los_Angeles",
+      "dates": 6,
+      "eventId": "vvG1HZ_p2EPtyT"
+    },
+    {
+      "key": "seattle mariners|Presale: Mariners Text Subscriber Presale|1795456800000",
+      "title": "Seattle Mariners",
+      "label": "Presale: Mariners Text Subscriber Presale",
+      "kind": "presale",
+      "start": "2026-11-23T18:00:00.000Z",
+      "time": "10:00 AM PT",
+      "timeZone": "America/Los_Angeles",
+      "dates": 6,
+      "eventId": "vvG1HZ_p2EPtyT"
+    },
+    {
+      "key": "seattle mariners|Presale: Ticketmaster Presale|1795464000000",
+      "title": "Seattle Mariners",
+      "label": "Presale: Ticketmaster Presale",
+      "kind": "presale",
+      "start": "2026-11-23T20:00:00.000Z",
+      "time": "12:00 PM PT",
+      "timeZone": "America/Los_Angeles",
+      "dates": 6,
+      "eventId": "vvG1HZ_p2EPtyT"
+    }
+  ],
+  "myEvents": [
+    {
+      "id": "sample-0",
+      "provider": "ticketmaster",
+      "provider_event_id": "k7vGF_4mE3P--",
+      "event_name": "Noah Kahan: The Last Of The Bugs World Tour",
+      "event_date": "2027-06-18",
+      "venue_name": "MetLife Stadium",
+      "city": "East Rutherford",
+      "official_url": "https://www.ticketmaster.com/noah-kahan-the-last-of-the-east-rutherford-new-jersey-06-18-2027/event/0000655BA74A5861",
+      "lifecycle_state": "PURCHASE_CONFIRMED",
+      "change_kind": null,
+      "previous_event_date": null,
+      "companions": "Sam, Jordan",
+      "meetup_note": "Lot E, 5:30",
+      "memory_note": null
+    },
+    {
+      "id": "sample-1",
+      "provider": "ticketmaster",
+      "provider_event_id": "vvG1VZ_4hzGu0Q",
+      "event_name": "Atlanta Braves vs. St. Louis Cardinals",
+      "event_date": "2027-02-21",
+      "venue_name": "CoolToday Park",
+      "city": "Venice",
+      "official_url": "https://www.ticketmaster.com/atlanta-braves-vs-st-louis-cardinals-venice-florida-02-21-2027/event/0D006556F830D91A",
+      "lifecycle_state": "MARKED_GOING",
+      "change_kind": null,
+      "previous_event_date": null,
+      "companions": null,
+      "meetup_note": null,
+      "memory_note": null
+    }
+  ],
+  "errors": []
+}
