@@ -37,6 +37,8 @@ const soonSale = presales.find((s) => s.dates[0]) ;
 const fanEvent = (d, state, i) => ({ id: `sample-${i}`, provider: "ticketmaster", provider_event_id: d.id, event_name: d.name, event_date: d.date, venue_name: d.venue, city: d.city, official_url: d.officialUrl ?? null, lifecycle_state: state, change_kind: null, previous_event_date: null, companions: i === 0 ? "Sam, Jordan" : null, meetup_note: i === 0 ? "Lot E, 5:30" : null, memory_note: null });
 const myEvents = [noahShow && fanEvent(noahShow, "PURCHASE_CONFIRMED", 0), soonSale && fanEvent(soonSale.dates[0], "MARKED_GOING", 1)].filter(Boolean);
 const user = { id: "sample-fan", email: "fan@example.com", displayName: "Alex" };
+// Screenshots read the same for everyone: the sample fan is in New York.
+const near = { location: "New York, NY", city: "New York", region: "NY", source: "network" };
 
 const authed = {
   "/api/follows": { follows },
@@ -45,7 +47,7 @@ const authed = {
   "/api/presale-signups": { signups: [] },
   "/api/ticket-alerts": { alerts: [] },
   "/api/auth/session": { user },
-  "/api/mobile/account": { user },
+  "/api/mobile/account": { user, membership: { plan: "free", status: "free" }, trialEndsAt: new Date(Date.now() + 26 * 86_400_000).toISOString() },
 };
 
 const browser = await chromium.launch();
@@ -59,8 +61,11 @@ await context.route("**/*", async (route) => {
   const url = new URL(req.url());
   if (url.host === `localhost:${PORT}`) return route.continue();
   if (url.origin !== API) return route.continue();
-  if (req.method() !== "GET") return route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
-  if (authed[url.pathname]) return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(authed[url.pathname]) });
+  const cors = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "GET,POST,PATCH,DELETE,OPTIONS" };
+  if (req.method() === "OPTIONS") return route.fulfill({ status: 204, headers: cors, body: "" });
+  if (req.method() !== "GET") return route.fulfill({ status: 200, headers: cors, contentType: "application/json", body: "{}" });
+  if (url.pathname === "/api/location/near") return route.fulfill({ status: 200, headers: cors, contentType: "application/json", body: JSON.stringify(near) });
+  if (authed[url.pathname]) return route.fulfill({ status: 200, headers: cors, contentType: "application/json", body: JSON.stringify(authed[url.pathname]) });
   const r = await route.fetch();
   return route.fulfill({ response: r, headers: { ...r.headers(), "access-control-allow-origin": "*" } });
 });
