@@ -28,7 +28,7 @@ const suggestions = (await get("/api/follows/suggestions")).suggestions.map((s) 
 const noah = await get("/api/performers/noah-kahan");
 
 // Sample fan: follows Noah Kahan plus artists and teams with real sales coming up.
-const followNames = [...new Set(["Noah Kahan", ...presales.slice(0, 3).map((s) => s.performer ?? s.title), ...suggestions.slice(0, 2)])].slice(0, 6);
+const followNames = [...new Set(["Noah Kahan", ...suggestions.slice(0, 5)])].slice(0, 6);
 const follows = followNames.map((name, i) => ({ name, name_key: name.toLowerCase(), kind: "artist", created_at: new Date(Date.now() - (i + 1) * 86_400_000).toISOString() }));
 const mySales = presales.filter((s) => followNames.includes(s.performer ?? s.title)).slice(0, 4).map((s) => ({ key: s.key, title: s.title, label: s.label, kind: s.kind, start: s.start, time: s.time, timeZone: s.timeZone, dates: s.dates.length, eventId: s.dates[0]?.id }));
 
@@ -78,7 +78,7 @@ const shoot = async (name, path, { signedIn = true, wait = 3500 } = {}) => {
   console.log("captured", name, path);
 };
 
-const sale = mySales[0] ?? presales[0];
+const sale = mySales[0] ?? presales.find((s) => suggestions.slice(0, 20).includes(s.performer ?? s.title)) ?? presales[0];
 await shoot("1-home", "/");
 await shoot("2-sale", `/sale/${encodeURIComponent(sale.key)}?title=${encodeURIComponent(sale.title)}`);
 await shoot("3-artist", "/presales/noah-kahan");

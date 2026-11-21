@@ -6,6 +6,8 @@ on:
 jobs:
   shots:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,3 +34,10 @@ jobs:
         with:
           name: app-store-screenshots
           path: screenshots/
+      - name: Publish images to the screenshots-output branch
+        run: |
+          cd screenshots
+          git init -q -b screenshots-output
+          git config user.name "Curva"; git config user.email "hello@joincurva.com"
+          git add -A && git commit -q -m "App Store screenshots from ${GITHUB_SHA}"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" screenshots-output
