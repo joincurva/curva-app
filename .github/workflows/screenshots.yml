@@ -1,0 +1,34 @@
+name: App Store screenshots
+on:
+  push:
+    branches: [app-store-screenshots]
+  workflow_dispatch:
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Add the web renderer (CI only, not committed)
+        run: npx expo install react-native-web react-dom @expo/metro-runtime
+      - name: Web-only storage shims (CI only; the iPhone build keeps the Keychain)
+        run: |
+          SHIM='const SecureStore = { WHEN_UNLOCKED_THIS_DEVICE_ONLY: 0, getItemAsync: async (k: string) => localStorage.getItem(k), setItemAsync: async (k: string, v: string, _o?: unknown) => { localStorage.setItem(k, v); }, deleteItemAsync: async (k: string) => { localStorage.removeItem(k); } };'
+          sed "s#import \* as SecureStore from \"expo-secure-store\";#${SHIM}#" lib/session.tsx > lib/session.web.tsx
+          sed "s#import \* as SecureStore from \"expo-secure-store\";#${SHIM}#" lib/install.ts > lib/install.web.ts
+      - run: npx expo export --platform web --output-dir dist
+      - name: Fonts close to iOS system type
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq fonts-inter >/dev/null
+          mkdir -p ~/.config/fontconfig
+          printf '<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "fonts.dtd"><fontconfig><alias><family>sans-serif</family><prefer><family>Inter</family></prefer></alias><alias><family>system-ui</family><prefer><family>Inter</family></prefer></alias><alias><family>-apple-system</family><prefer><family>Inter</family></prefer></alias><alias><family>BlinkMacSystemFont</family><prefer><family>Inter</family></prefer></alias><alias><family>Helvetica</family><prefer><family>Inter</family></prefer></alias></fontconfig>' > ~/.config/fontconfig/fonts.conf
+          fc-cache -f >/dev/null
+      - run: npm install --no-save --no-audit --no-fund playwright@1.48.2 && npx playwright install --with-deps chromium
+      - run: node scripts/screenshots/shots.mjs dist screenshots
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-store-screenshots
+          path: screenshots/
