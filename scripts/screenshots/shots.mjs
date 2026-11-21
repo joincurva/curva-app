@@ -33,7 +33,7 @@ const follows = followNames.map((name, i) => ({ name, name_key: name.toLowerCase
 const mySales = presales.filter((s) => followNames.includes(s.performer ?? s.title)).slice(0, 4).map((s) => ({ key: s.key, title: s.title, label: s.label, kind: s.kind, start: s.start, time: s.time, timeZone: s.timeZone, dates: s.dates.length, eventId: s.dates[0]?.id }));
 
 const noahShow = noah.dates.find((d) => /east rutherford|new york|foxborough|philadelphia/i.test(d.city)) ?? noah.dates[0];
-const soonSale = presales.find((s) => s.dates[0]) ;
+const soonSale = presales.find((s) => s.dates[0] && followNames.slice(1).includes(s.performer ?? s.title)) ?? presales.find((s) => s.dates[0]);
 const fanEvent = (d, state, i) => ({ id: `sample-${i}`, provider: "ticketmaster", provider_event_id: d.id, event_name: d.name, event_date: d.date, venue_name: d.venue, city: d.city, official_url: d.officialUrl ?? null, lifecycle_state: state, change_kind: null, previous_event_date: null, companions: i === 0 ? "Sam, Jordan" : null, meetup_note: i === 0 ? "Lot E, 5:30" : null, memory_note: null });
 const myEvents = [noahShow && fanEvent(noahShow, "PURCHASE_CONFIRMED", 0), soonSale && fanEvent(soonSale.dates[0], "MARKED_GOING", 1)].filter(Boolean);
 const user = { id: "sample-fan", email: "fan@example.com", displayName: "Alex" };
@@ -88,9 +88,8 @@ await shoot("1-home", "/");
 await shoot("2-sale", `/sale/${encodeURIComponent(sale.key)}?title=${encodeURIComponent(sale.title)}`);
 await shoot("3-artist", "/presales/noah-kahan");
 if (myEvents[0]) await shoot("4-show", `/show/${myEvents[0].id}?show=${encodeURIComponent(JSON.stringify(myEvents[0]))}`, { wait: 5000 });
-await shoot("5-discover", "/discover");
-await shoot("6-following", "/account");
-await shoot("7-presales", "/presales");
+await shoot("5-following", "/account");
+await shoot("6-presales", "/presales");
 
 await writeFile(join(OUT, "data.json"), JSON.stringify({ followNames, mySales, myEvents, errors }, null, 2));
 console.log("page errors:", errors.length ? errors.join("\n") : "none");
