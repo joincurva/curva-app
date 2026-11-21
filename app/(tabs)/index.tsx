@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -31,7 +31,9 @@ function SaleRow({ title, label, when, onPress }: { title: string; label: string
 }
 
 export default function Home() {
-  const { session } = useSession();
+  const { session, ready } = useSession();
+  // Only the newest load may update the screen, so a slower signed-out load can't wipe a fan's shows.
+  const loadId = useRef(0);
   const [mine, setMine] = useState<MySale[]>([]);
   const [shows, setShows] = useState<FanEvent[]>([]);
   const [pastCount, setPastCount] = useState(0);
@@ -43,6 +45,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const load = useCallback(async () => {
+    const id = ++loadId.current;
+    const current = () => id === loadId.current;
     setLoading(true);
     setError("");
     try {
@@ -51,10 +55,11 @@ export default function Home() {
         approximateCity().then((city) => {
           setNear(city);
           return getEvents(new URLSearchParams(city ? { location: city, page: "0" } : { country: "US", page: "0" }));
-        }),
+        }).catch(() => ({ events: [] })), // "Near you" can be empty; it shouldn't hide the fan's own shows and sales.
         session ? getMySales(session.token).catch(() => ({ watching: 0, sales: [] })) : Promise.resolve({ watching: 0, sales: [] }),
         session ? getMyEvents(session.token).catch(() => ({ events: [] as FanEvent[] })) : Promise.resolve({ events: [] as FanEvent[] }),
       ]);
+      if (!current()) return;
       {
         const t = new Date();
         const todayIso = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
@@ -70,15 +75,16 @@ export default function Home() {
       setMine(m.sales);
       setWatching(m.watching);
     } catch (x) {
-      setError(x instanceof Error ? x.message : "Curva could not refresh.");
+      if (current()) setError(x instanceof Error ? x.message : "Curva could not refresh.");
     } finally {
-      setLoading(false);
+      if (current()) setLoading(false);
     }
   }, [session]);
   useEffect(() => {
+    if (!ready) return;
     const timer = setTimeout(() => void load(), 0);
     return () => clearTimeout(timer);
-  }, [load]);
+  }, [load, ready]);
   const toPresales = () => router.push("/(tabs)/presales");
   return (
     <Screen>
