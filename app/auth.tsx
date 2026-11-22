@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import * as AppleAuthentication from "expo-apple-authentication";
+import * as WebBrowser from "expo-web-browser";
+import * as ExpoLinking from "expo-linking";
 import Constants from "expo-constants";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useSession } from "../lib/session";
 import { Body, Button, Input, Screen, Title } from "../components/ui";
 import { request } from "../lib/api";
+import { config } from "../lib/config";
 import { colors, space } from "../lib/theme";
 
 type Mode = "create" | "signin";
@@ -51,6 +54,33 @@ export default function Auth() {
       const code = (x as { code?: string }).code;
       if (code === "ERR_REQUEST_CANCELED") return;
       setMessage(x instanceof Error ? x.message : "Sign in with Apple didn't complete. Try again, or use email.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  // Continue with Google: Google's own sign-in opens in a secure sheet; Curva gets back a one-time code
+  // (curva://auth/native?token=…) and trades it for a session, the same way the email link works.
+  const signInWithGoogle = async () => {
+    setMessage("");
+    try {
+      const result = await WebBrowser.openAuthSessionAsync(`${config.apiUrl}/api/auth/oauth/google/start?client=app`, "curva://auth/native");
+      if (result.type !== "success") return;
+      const params = ExpoLinking.parse(result.url).queryParams ?? {};
+      const read = (key: string) => (typeof params[key] === "string" ? (params[key] as string) : undefined);
+      const token = read("token");
+      if (!token) {
+        const reason = read("error");
+        if (reason === "sign-in-cancelled") return;
+        setMessage(reason === "no-verified-email" ? "Your Google account didn't share a verified email. Try email sign-in instead." : "Google sign-in didn't complete. Try again, or use email.");
+        return;
+      }
+      setBusy(true);
+      const r = await request<{ sessionToken: string; user: { id: string; email: string; displayName?: string } }>("/api/auth/native-session", { method: "POST", body: JSON.stringify({ token }) });
+      await setSession({ token: r.sessionToken, user: r.user });
+      router.replace(read("created") ? "/welcome" : "/");
+    } catch {
+      setMessage("Google sign-in didn't complete. Try again, or use email.");
     } finally {
       setBusy(false);
     }
@@ -111,23 +141,27 @@ export default function Auth() {
             : "We'll email you a secure, single-use link that brings you back to this app. Curva never asks for a password."}
         </Body>
 
-        {appleReady ? (
-          <View style={s.oneTap}>
-            <AppleAuthentication.AppleAuthenticationButton
-              buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
-              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-              cornerRadius={14}
-              style={s.appleButton}
-              onPress={() => void signInWithApple()}
-            />
+        <View style={s.oneTap}>
+            {appleReady ? (
+              <AppleAuthentication.AppleAuthenticationButton
+                buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+                buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+                cornerRadius={14}
+                style={s.appleButton}
+                onPress={() => void signInWithApple()}
+              />
+            ) : null}
+            <Pressable accessibilityRole="button" accessibilityLabel="Continue with Google" disabled={busy} onPress={() => void signInWithGoogle()} style={({ pressed }) => [s.googleButton, pressed && { opacity: 0.8 }]}>
+              <Ionicons name="logo-google" size={18} color="#111" />
+              <Text style={s.googleText}>Continue with Google</Text>
+            </Pressable>
             <Text style={s.small}>
               By continuing you agree to Curva&apos;s{" "}
               <Text style={s.smallLink} onPress={() => void Linking.openURL("https://joincurva.com/terms")}>Terms</Text> and{" "}
               <Text style={s.smallLink} onPress={() => void Linking.openURL("https://joincurva.com/privacy")}>Privacy Notice</Text>.
             </Text>
             <Text style={s.divider}>or use your email</Text>
-          </View>
-        ) : null}
+        </View>
         {creating && (
           <Input accessibilityLabel="First name" placeholder="First name" autoCapitalize="words" autoComplete="given-name" textContentType="givenName" value={name} onChangeText={setName} />
         )}
@@ -180,6 +214,8 @@ const s = StyleSheet.create({
   review: { gap: space.md },
   oneTap: { gap: space.sm },
   appleButton: { height: 50, width: "100%" },
+  googleButton: { height: 50, width: "100%", borderRadius: 14, backgroundColor: "#fff", borderWidth: 1, borderColor: "#DADCE0", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10 },
+  googleText: { fontFamily: "Manrope-SemiBold", color: "#111", fontSize: 17, fontWeight: "600" },
   smallLink: { fontFamily: "Manrope-Bold", color: colors.cobalt, fontWeight: "700", fontSize: 13 },
   divider: { fontFamily: "Manrope-SemiBold", color: colors.muted, fontSize: 14, fontWeight: "600", textAlign: "center", marginTop: space.sm },
 });
