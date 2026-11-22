@@ -68,8 +68,7 @@
       "eas": {
         "projectId": "b7a63ad8-18de-479a-b1a9-9ea0a8c1a7c1"
       },
-      "pushDeliveryEnabled": true,
-      "appleSignIn": false
+      "pushDeliveryEnabled": true
     },
     "experiments": {
       "typedRoutes": true

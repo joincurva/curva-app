@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import * as AppleAuthentication from "expo-apple-authentication";
-import Constants from "expo-constants";
+import React, { useState } from "react";
+import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useSession } from "../lib/session";
@@ -23,39 +21,6 @@ export default function Auth() {
   const [codeOpen, setCodeOpen] = useState(false);
   const [code, setCode] = useState("");
   const { setSession } = useSession();
-  const [appleReady, setAppleReady] = useState(false);
-  useEffect(() => {
-    // Turned on once Sign in with Apple is enabled for the app in Apple Developer (app.json extra.appleSignIn).
-    const enabled = Boolean((Constants.expoConfig?.extra as { appleSignIn?: boolean } | undefined)?.appleSignIn);
-    if (enabled && Platform.OS === "ios") void AppleAuthentication.isAvailableAsync().then(setAppleReady).catch(() => setAppleReady(false));
-  }, []);
-
-  // Sign in with Apple: one tap with Face ID, no email to wait for. Works for new and returning fans.
-  const signInWithApple = async () => {
-    setMessage("");
-    const nonce = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
-    try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [AppleAuthentication.AppleAuthenticationScope.FULL_NAME, AppleAuthentication.AppleAuthenticationScope.EMAIL],
-        nonce,
-      });
-      if (!credential.identityToken) throw new Error("Sign in with Apple didn't complete. Try again.");
-      setBusy(true);
-      const r = await request<{ sessionToken: string; created: boolean; user: { id: string; email: string; displayName?: string } }>("/api/auth/apple/native", {
-        method: "POST",
-        body: JSON.stringify({ identityToken: credential.identityToken, nonce, givenName: credential.fullName?.givenName ?? undefined }),
-      });
-      await setSession({ token: r.sessionToken, user: r.user });
-      router.replace(r.created ? "/welcome" : "/");
-    } catch (x) {
-      const code = (x as { code?: string }).code;
-      if (code === "ERR_REQUEST_CANCELED") return;
-      setMessage(x instanceof Error ? x.message : "Sign in with Apple didn't complete. Try again, or use email.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
   // For accounts given an access code (Apple's App Store review). Fans sign in with the email link.
   const useCode = async () => {
     setBusy(true);
@@ -111,23 +76,6 @@ export default function Auth() {
             : "We'll email you a secure, single-use link that brings you back to this app. Curva never asks for a password."}
         </Body>
 
-        {appleReady ? (
-          <View style={s.oneTap}>
-            <AppleAuthentication.AppleAuthenticationButton
-              buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
-              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-              cornerRadius={14}
-              style={s.appleButton}
-              onPress={() => void signInWithApple()}
-            />
-            <Text style={s.small}>
-              By continuing you agree to Curva&apos;s{" "}
-              <Text style={s.smallLink} onPress={() => void Linking.openURL("https://joincurva.com/terms")}>Terms</Text> and{" "}
-              <Text style={s.smallLink} onPress={() => void Linking.openURL("https://joincurva.com/privacy")}>Privacy Notice</Text>.
-            </Text>
-            <Text style={s.divider}>or use your email</Text>
-          </View>
-        ) : null}
         {creating && (
           <Input accessibilityLabel="First name" placeholder="First name" autoCapitalize="words" autoComplete="given-name" textContentType="givenName" value={name} onChangeText={setName} />
         )}
@@ -178,8 +126,6 @@ const s = StyleSheet.create({
   link: { color: colors.cobalt, fontWeight: "700" },
   small: { fontFamily: "Manrope-Regular", color: colors.muted, fontSize: 13, textAlign: "center" },
   review: { gap: space.md },
-  oneTap: { gap: space.sm },
-  appleButton: { height: 50, width: "100%" },
   smallLink: { fontFamily: "Manrope-Bold", color: colors.cobalt, fontWeight: "700", fontSize: 13 },
   divider: { fontFamily: "Manrope-SemiBold", color: colors.muted, fontSize: 14, fontWeight: "600", textAlign: "center", marginTop: space.sm },
 });
