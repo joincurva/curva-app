@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { getCompanion, removeMyEvent } from "../../lib/api";
+import { getCompanion, getMyEvents, removeMyEvent } from "../../lib/api";
 import { subscribeCalendar } from "../../lib/calendar";
 import { ShowNotes } from "../../components/show-notes";
 import { openOfficialTickets } from "../../lib/official";
@@ -21,13 +21,24 @@ const PLAN = [
 export default function ShowScreen() {
   const params = useLocalSearchParams<{ id: string; show?: string }>();
   const { session } = useSession();
-  const show = useMemo(() => {
+  const passed = useMemo(() => {
     try {
       return params.show ? (JSON.parse(params.show) as FanEvent) : undefined;
     } catch {
       return undefined;
     }
   }, [params.show]);
+  // Opened from a notification with only the show's id: load it from the fan's shows.
+  const [loaded, setLoaded] = useState<FanEvent>();
+  useEffect(() => {
+    if (passed || !session || !params.id) return;
+    let live = true;
+    void getMyEvents(session.token).then((r) => live && setLoaded(r.events.find((e) => e.id === params.id))).catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [passed, session, params.id]);
+  const show = passed ?? loaded;
   const [info, setInfo] = useState<Companion>();
   useEffect(() => {
     if (!show?.provider_event_id || show.provider !== "ticketmaster") return;

@@ -5,7 +5,8 @@ import { approximateCity, deviceCity } from "../../lib/location";
 import { EventCard } from "../../components/event-card";
 import { BrowseTiles } from "../../components/browse-tiles";
 import { Button, Input, Screen, State, Title, Body } from "../../components/ui";
-import { getEvents, getPerformer, performerSlug } from "../../lib/api";
+import { getEvents, getPerformer, performerSlug, searchPerformers, type PerformerMatch } from "../../lib/api";
+import { FollowButton } from "../../components/follow-button";
 import { router } from "expo-router";
 import type { Event } from "../../lib/types";
 import { colors, radius, space } from "../../lib/theme";
@@ -18,6 +19,16 @@ export default function Discover() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [artist, setArtist] = useState<{ name: string; slug: string; count: number }>();
+  const [matches, setMatches] = useState<PerformerMatch[]>([]);
+  const [typing, setTyping] = useState(false);
+  // Suggest real artists, teams and shows as the fan types, so they know they've got the right one.
+  useEffect(() => {
+    const term = q.trim();
+    if (!typing || term.length < 2) { setMatches([]); return; }
+    let live = true;
+    const timer = setTimeout(() => void searchPerformers(term).then((r) => live && setMatches(r.matches.slice(0, 5))).catch(() => undefined), 200);
+    return () => { live = false; clearTimeout(timer); };
+  }, [q, typing]);
   const search = useCallback(
     async (next = 0, where?: string) => {
       setLoading(true);
@@ -90,10 +101,23 @@ export default function Discover() {
               accessibilityLabel="Artist, team, venue, or event"
               placeholder="Artist, team, venue, or event"
               value={q}
-              onChangeText={setQ}
+              onChangeText={(v) => { setQ(v); setTyping(true); }}
               returnKeyType="search"
-              onSubmitEditing={() => search(0)}
+              onSubmitEditing={() => { setTyping(false); void search(0); }}
             />
+            {matches.length ? (
+              <View style={s.suggest}>
+                {matches.map((m) => (
+                  <View key={`${m.kind}-${m.name}`} style={s.suggestRow}>
+                    <Pressable accessibilityRole="button" accessibilityLabel={`${m.name}: every date and sale`} style={{ flex: 1 }} onPress={() => { setTyping(false); setMatches([]); router.push({ pathname: "/presales/[performer]", params: { performer: m.slug, name: m.name, kind: m.kind } }); }}>
+                      <Text style={s.suggestName} numberOfLines={1}>{m.name}</Text>
+                      <Text style={s.suggestMeta} numberOfLines={1}>{[m.detail ?? (m.kind === "team" ? "Team" : m.kind === "show" ? "Show" : "Artist"), m.dates ? `${m.dates} upcoming ${m.dates === 1 ? "date" : "dates"}` : "No dates listed yet"].join(" · ")}</Text>
+                    </Pressable>
+                    <FollowButton compact kind={m.kind === "venue" ? "artist" : m.kind} name={m.name} />
+                  </View>
+                ))}
+              </View>
+            ) : null}
             <View style={s.whereRow}>
               <View style={{ flex: 1 }}>
                 <Input
@@ -110,7 +134,7 @@ export default function Discover() {
                 <Text style={s.nearText}>Near me</Text>
               </Pressable>
             </View>
-            <Button label="Find events" onPress={() => search(0)} />
+            <Button label="Find events" onPress={() => { setTyping(false); setMatches([]); void search(0); }} />
             {artist ? (
               <Pressable accessibilityRole="button" onPress={() => router.push(`/presales/${artist.slug}`)} style={s.artist}>
                 <Ionicons name="person-circle" size={34} color={colors.cobalt} />
@@ -163,4 +187,8 @@ const s = StyleSheet.create({
   nearText: { color: colors.cobalt, fontWeight: "800" },
   content: { padding: space.lg, paddingBottom: 120 },
   form: { gap: space.md, marginBottom: space.xl },
+  suggest: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.card, paddingVertical: space.xs },
+  suggestRow: { flexDirection: "row", alignItems: "center", gap: space.md, paddingHorizontal: space.md, paddingVertical: space.sm },
+  suggestName: { fontFamily: "Manrope-Bold", color: colors.ink, fontSize: 16, fontWeight: "700" },
+  suggestMeta: { fontFamily: "Manrope-Regular", color: colors.muted, fontSize: 13 },
 });

@@ -168,3 +168,6 @@ export type BrowseTeams = { leagues: { title: string; teams: { name: string; slu
 export type BrowseBroadway = { checkedOn: string; source: { label: string; url: string }; shows: { name: string; match: string; theater: string; opened: string; limited?: string; officialUrl?: string; boxOffice?: string; nextDate?: string; dates?: number; sale?: { label: string; start: string; timeZone: string } }[] };
 export type BrowseChampionships = { championships: { slug: string; name: string; sport: string; when: string; events: { name: string; date: string; venue?: string; city?: string; state?: string; officialUrl: string; saleStatus?: string }[] }[] };
 export const getBrowse = <T,>(section: "teams" | "broadway" | "championships") => request<T>(`/api/mobile/browse?section=${section}`);
+
+export type PerformerMatch = { name: string; slug: string; kind: "artist" | "team" | "show" | "venue"; dates: number; detail?: string };
+export const searchPerformers = (q: string) => request<{ matches: PerformerMatch[] }>(`/api/follows/search?q=${encodeURIComponent(q)}`);

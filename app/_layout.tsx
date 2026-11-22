@@ -12,7 +12,10 @@ export default function Root() {
     // Tapping a follow alert opens that artist's or team's sales in Curva.
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
       const performer = response.notification.request.content.data?.performer;
+      const fanEventId = response.notification.request.content.data?.fanEventId;
       if (typeof performer === "string" && /^[a-z0-9-]{2,80}$/.test(performer)) router.push(`/presales/${performer}`);
+      // A sale or show reminder opens that show.
+      else if (typeof fanEventId === "string" && fanEventId.length < 80) router.push({ pathname: "/show/[id]", params: { id: fanEventId } });
       else if (response.notification.request.content.data?.show) router.push("/(tabs)");
     });
     return () => sub.remove();

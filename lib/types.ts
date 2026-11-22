@@ -12,6 +12,8 @@ export type Event = {
   imageUrl?: string;
   imageAlt?: string;
   source?: "Ticketmaster";
+  /** The artists, teams or shows playing, from the official listing. */
+  providerAttractionNames?: string[];
 };
 export type Alert = {
   id: string;

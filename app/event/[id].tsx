@@ -4,6 +4,8 @@ import { Stack, router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TicketHandoff } from "../../components/handoff";
 import { SoldOutHelp } from "../../components/sold-out";
+import { FollowButton } from "../../components/follow-button";
+import { performerSlug } from "../../lib/api";
 import { Body, Title } from "../../components/ui";
 import { officialTicketUrl } from "../../lib/official";
 import { buyThenAsk } from "../../lib/got-tickets";
@@ -37,6 +39,9 @@ export default function EventDetail() {
     ...(event.time ? { hour: "numeric", minute: "2-digit" } : {}),
   });
   const verified = Boolean(officialTicketUrl(event.officialUrl));
+  // Who's playing, so a fan can follow them from any event (add-ons like parking aren't performers).
+  const performers = [...new Set(event.providerAttractionNames ?? [])].filter((name) => !/parking|tour|suite|add-?on|pre[- ]?game|hospitality|experience/i.test(name)).slice(0, 2);
+  const followKind = /sport/i.test(event.category) ? "team" : /theat/i.test(event.category) ? "show" : "artist";
   const share = () =>
     void Share.share({
       message: `${event.name} · ${when} · ${event.venue}, ${event.city}. Found it on Curva: https://joincurva.com`,
@@ -82,6 +87,16 @@ export default function EventDetail() {
           </Text>
         </View>
       </View>
+
+      {performers.map((name) => (
+        <View key={name} style={s.performer}>
+          <Pressable accessibilityRole="button" accessibilityLabel={`${name}: every date and sale`} onPress={() => router.push({ pathname: "/presales/[performer]", params: { performer: performerSlug(name), name, kind: followKind } })} style={s.performerMain}>
+            <Text style={s.performerName} numberOfLines={2}>{name}</Text>
+            <Text style={s.performerMeta}>Every date and sale</Text>
+          </Pressable>
+          <FollowButton compact kind={followKind} name={name} />
+        </View>
+      ))}
 
       <View style={s.card}>
         <Text style={s.h2}>Tickets</Text>
@@ -149,4 +164,8 @@ const s = StyleSheet.create({
   tip: { flexDirection: "row", gap: space.md, alignItems: "flex-start" },
   tipText: { fontFamily: "Manrope-Regular", flex: 1, fontSize: 15, lineHeight: 21, color: colors.ink },
   foot: { fontFamily: "Manrope-Regular", fontSize: 12, lineHeight: 17, color: colors.muted, textAlign: "center" },
+  performer: { flexDirection: "row", alignItems: "center", gap: space.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.card, padding: space.lg },
+  performerMain: { flex: 1, gap: 2 },
+  performerName: { fontFamily: "Manrope-ExtraBold", color: colors.ink, fontSize: 17, fontWeight: "800" },
+  performerMeta: { fontFamily: "Manrope-SemiBold", color: colors.cobalt, fontSize: 14, fontWeight: "600" },
 });
