@@ -9,8 +9,9 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { Body, Button, Input, Screen, State, Title } from "../../components/ui";
+import { FollowButton } from "../../components/follow-button";
 import { Ionicons } from "@expo/vector-icons";
-import { getPresales } from "../../lib/api";
+import { getPresales, searchPerformers, type PerformerMatch } from "../../lib/api";
 import { useReminders } from "../../lib/remind";
 import { countdown, dayLabel, showDate, useNow } from "../../lib/time";
 import { brand, colors, radius, space } from "../../lib/theme";
@@ -96,12 +97,15 @@ export default function Presales() {
   const [sales, setSales] = useState<PresaleWindow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [match, setMatch] = useState<PerformerMatch>();
   const load = useCallback(async (q = "") => {
     setLoading(true);
     setError("");
     try {
-      const r = await getPresales(q);
+      // A search for an artist, team or show leads with them, even when no new sale is opening soon.
+      const [r, m] = await Promise.all([getPresales(q), q.trim().length >= 2 ? searchPerformers(q.trim()).catch(() => ({ matches: [] })) : Promise.resolve({ matches: [] as PerformerMatch[] })]);
       setSales(r.sales);
+      setMatch(m.matches.find((x) => x.name.toLowerCase().startsWith(q.trim().toLowerCase())));
     } catch (x) {
       setError(x instanceof Error ? x.message : "The presale calendar could not load.");
     } finally {
@@ -139,6 +143,23 @@ export default function Presales() {
               returnKeyType="search"
             />
             <Button label="Search" variant="secondary" onPress={() => void load(query)} disabled={loading} />
+            {match && !loading ? (
+              <View style={s.match}>
+                <Text style={s.matchName}>{match.name}</Text>
+                <Text style={s.matchMeta}>
+                  {match.dates ? `${match.dates} upcoming ${match.dates === 1 ? "date" : "dates"} on official listings. ` : "No dates listed right now. "}
+                  {sales.length ? "New sales opening soon are below." : match.dates ? "Tickets are on sale now from the official seller. Follow and Curva tells you about any new presale." : "Follow and Curva tells you the moment dates are announced."}
+                </Text>
+                <View style={s.matchActions}>
+                  <FollowButton compact kind={match.kind === "venue" ? "artist" : match.kind} name={match.name} />
+                  {match.dates ? (
+                    <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: "/presales/[performer]", params: { performer: match.slug, name: match.name, kind: match.kind } })}>
+                      <Text style={s.matchLink}>See every date</Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              </View>
+            ) : null}
           </View>
         }
         ListEmptyComponent={
@@ -147,7 +168,7 @@ export default function Presales() {
           ) : error ? (
             <State kind="error" message={error} onRetry={() => void load(query)} />
           ) : (
-            <State kind="empty" message="No official sales match that search in the next 30 days." />
+            <State kind="empty" message={match ? `No new ${match.name} sales are opening in the next 30 days.` : "No official sales match that search in the next 30 days."} />
           )
         }
         ListFooterComponent={
@@ -235,4 +256,9 @@ const s = StyleSheet.create({
     justifyContent: "center",
   },
   officialText: { fontFamily: "Manrope-Bold", color: colors.cobalt, fontWeight: "700", fontSize: 14 },
+  match: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.card, padding: space.lg, gap: space.sm },
+  matchName: { fontFamily: "Manrope-ExtraBold", color: colors.ink, fontSize: 20, fontWeight: "800" },
+  matchMeta: { fontFamily: "Manrope-Regular", color: colors.muted, fontSize: 15, lineHeight: 21 },
+  matchActions: { flexDirection: "row", alignItems: "center", gap: space.lg, marginTop: space.xs },
+  matchLink: { fontFamily: "Manrope-ExtraBold", color: colors.cobalt, fontSize: 15, fontWeight: "800" },
 });
