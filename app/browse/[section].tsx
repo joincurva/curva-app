@@ -93,7 +93,7 @@ function Teams() {
       renderSectionHeader={({ section }) => <Text accessibilityRole="header" style={s.sectionTitle}>{section.title}</Text>}
       renderItem={({ item }) => (
         <View style={s.row}>
-          <Pressable accessibilityRole="button" accessibilityLabel={`${item.name}: dates and sales`} style={s.rowMain} onPress={() => router.push(`/presales/${performerSlug(item.name)}`)}>
+          <Pressable accessibilityRole="button" accessibilityLabel={`${item.name}: dates and sales`} style={s.rowMain} onPress={() => router.push({ pathname: "/presales/[performer]", params: { performer: performerSlug(item.name), name: item.name, kind: "team", ...(item.officialUrl ? { officialUrl: item.officialUrl } : {}) } })}>
             <Badge name={item.name} />
             <View style={{ flex: 1 }}>
               <Text style={s.rowTitle} numberOfLines={2}>{item.name}</Text>
@@ -150,6 +150,11 @@ function Broadway() {
                   <Ionicons name="open-outline" size={15} color={colors.cobalt} />
                 </Pressable>
               ) : item.boxOffice ? <Text style={s.meta}>Tickets: {item.boxOffice}</Text> : null}
+              {item.nextDate ? (
+                <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: "/presales/[performer]", params: { performer: performerSlug(item.match), name: item.name, kind: "show", ...(item.officialUrl ? { officialUrl: item.officialUrl } : {}) } })} style={s.secondary}>
+                  <Text style={s.secondaryText}>See dates</Text>
+                </Pressable>
+              ) : null}
             </View>
           </View>
         );
