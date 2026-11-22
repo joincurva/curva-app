@@ -3,6 +3,7 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "r
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { EventCard } from "../../components/event-card";
+import { BrowseTiles } from "../../components/browse-tiles";
 import { Body, Button, Heading, Screen, State } from "../../components/ui";
 import { getEvents, getMyEvents, getMySales, getPresales } from "../../lib/api";
 import { useFollows } from "../../lib/follows";
@@ -95,10 +96,12 @@ export default function Home() {
           <Text style={s.sub}>Follow who you love once. Curva gets you to every presale on time, sends you to the official seller at face value, then helps you plan the night.</Text>
           {!session ? (
             <Pressable accessibilityRole="button" onPress={() => router.push("/auth")} style={s.cta}>
-              <Text style={s.ctaText}>Sign in to get reminders</Text>
+              <Text style={s.ctaText}>Get free presale reminders</Text>
             </Pressable>
           ) : null}
         </View>
+
+        <BrowseTiles />
 
         {error ? <State kind="error" message={error} onRetry={() => void load()} /> : null}
 

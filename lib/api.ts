@@ -163,3 +163,8 @@ export const setSignupStatus = (id: string, status: import("./types").PresaleSig
 
 export const updateMyEvent = (id: string, plan: { companions?: string | null; meetupNote?: string | null; memoryNote?: string | null }, token: string) =>
   request<{ event: import("./types").FanEvent }>(`/api/fan-events/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(plan) }, token);
+
+export type BrowseTeams = { leagues: { title: string; teams: { name: string; slug: string; officialUrl?: string }[] }[] };
+export type BrowseBroadway = { checkedOn: string; source: { label: string; url: string }; shows: { name: string; match: string; theater: string; opened: string; limited?: string; officialUrl?: string; boxOffice?: string; nextDate?: string; dates?: number; sale?: { label: string; start: string; timeZone: string } }[] };
+export type BrowseChampionships = { championships: { slug: string; name: string; sport: string; when: string; events: { name: string; date: string; venue?: string; city?: string; state?: string; officialUrl: string; saleStatus?: string }[] }[] };
+export const getBrowse = <T,>(section: "teams" | "broadway" | "championships") => request<T>(`/api/mobile/browse?section=${section}`);

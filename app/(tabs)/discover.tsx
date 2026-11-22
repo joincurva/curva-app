@@ -3,6 +3,7 @@ import { Alert, FlatList, Pressable, StyleSheet, Text, View } from "react-native
 import { Ionicons } from "@expo/vector-icons";
 import { approximateCity, deviceCity } from "../../lib/location";
 import { EventCard } from "../../components/event-card";
+import { BrowseTiles } from "../../components/browse-tiles";
 import { Button, Input, Screen, State, Title, Body } from "../../components/ui";
 import { getEvents, getPerformer, performerSlug } from "../../lib/api";
 import { router } from "expo-router";
@@ -84,6 +85,7 @@ export default function Discover() {
             <Body muted>
               Concerts, games and shows from official listings{location ? ` near ${location}` : ""}.
             </Body>
+            <BrowseTiles />
             <Input
               accessibilityLabel="Artist, team, venue, or event"
               placeholder="Artist, team, venue, or event"

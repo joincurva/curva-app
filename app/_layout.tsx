@@ -34,6 +34,7 @@ export default function Root() {
           <Stack.Screen name="sale/[key]" options={{ title: "", headerBackTitle: "Back" }} />
           <Stack.Screen name="show/[id]" options={{ title: "", headerBackTitle: "Back" }} />
           <Stack.Screen name="recap" options={{ title: "", headerBackTitle: "Back" }} />
+          <Stack.Screen name="browse/[section]" options={{ title: "", headerBackTitle: "Back" }} />
           <Stack.Screen name="welcome" options={{ headerShown: false, gestureEnabled: false }} />
           <Stack.Screen
             name="auth"

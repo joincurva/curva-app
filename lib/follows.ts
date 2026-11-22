@@ -37,9 +37,9 @@ export function useFollows() {
     void refresh();
   }, [ready, session, refresh]);
   const isFollowing = (name: string) => follows.some((f) => f.name_key === followKey(name));
-  const follow = async (name: string) => {
+  const follow = async (name: string, kind: Follow["kind"] = "artist") => {
     if (!session) throw new Error("Sign in to follow.");
-    await followName(name, session.token);
+    await followName(name, session.token, kind);
     void turnOnSaleAlerts(session.token).catch(() => undefined);
     await refresh();
   };
