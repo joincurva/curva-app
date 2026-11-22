@@ -23,10 +23,12 @@
       },
       "privacyManifests": {
         "NSPrivacyAccessedAPITypes": []
-      }
+      },
+      "usesAppleSignIn": true
     },
     "plugins": [
       "expo-router",
+      "expo-apple-authentication",
       [
         "expo-splash-screen",
         {
