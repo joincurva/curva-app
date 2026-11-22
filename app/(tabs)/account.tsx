@@ -19,9 +19,9 @@ import { brand, space } from "../../lib/theme";
 type Membership = { plan: "free" | "plus" | "premier"; status: string; cancelAtPeriodEnd?: boolean; currentPeriodEnd?: string };
 
 /** Plain words for the fan, never raw billing states. */
-function membershipLabel({ plan, cancelAtPeriodEnd, currentPeriodEnd }: Membership, trialEndsAt?: string) {
+function membershipLabel({ plan, cancelAtPeriodEnd, currentPeriodEnd }: Membership, _trialEndsAt?: string) {
   const day = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  if (plan === "free") return trialEndsAt ? `Curva Plus free trial, through ${day(trialEndsAt)}` : "Curva Free";
+  if (plan === "free") return "Free, for good";
   const name = plan === "plus" ? "Curva Plus" : "Curva Premier";
   return cancelAtPeriodEnd && currentPeriodEnd ? `${name}, through ${day(currentPeriodEnd)}` : name;
 }
