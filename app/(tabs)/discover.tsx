@@ -156,8 +156,8 @@ export default function Discover() {
 }
 const s = StyleSheet.create({
   artist: { flexDirection: "row", alignItems: "center", gap: space.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.card, padding: space.md },
-  artistName: { fontSize: 17, fontWeight: "800", color: colors.ink },
-  artistMeta: { fontSize: 13, color: colors.muted },
+  artistName: { fontFamily: "Manrope-ExtraBold", fontSize: 17, fontWeight: "800", color: colors.ink },
+  artistMeta: { fontFamily: "Manrope-Regular", fontSize: 13, color: colors.muted },
   whereRow: { flexDirection: "row", alignItems: "center", gap: space.sm },
   nearBtn: { flexDirection: "row", alignItems: "center", gap: 4, minHeight: 48, paddingHorizontal: 12, borderRadius: radius.control, backgroundColor: "#E9EDFE" },
   nearText: { color: colors.cobalt, fontWeight: "800" },

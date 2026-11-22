@@ -27,5 +27,5 @@ export function BrowseTiles() {
 const s = StyleSheet.create({
   row: { flexDirection: "row", gap: space.sm },
   tile: { flex: 1, backgroundColor: brand.navy, borderRadius: radius.control, paddingVertical: space.md, paddingHorizontal: space.sm, alignItems: "center", gap: 6, minHeight: 72, justifyContent: "center" },
-  label: { color: "white", fontWeight: "800", fontSize: 14 },
+  label: { fontFamily: "Manrope-ExtraBold", color: "white", fontWeight: "800", fontSize: 14 },
 });

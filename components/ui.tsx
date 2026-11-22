@@ -127,19 +127,19 @@ export function State({
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.canvas },
   title: {
-    fontSize: 34,
+    fontFamily: "Manrope-ExtraBold", fontSize: 34,
     lineHeight: 40,
     fontWeight: "800",
     letterSpacing: -0.8,
     color: colors.ink,
   },
   heading: {
-    fontSize: 22,
+    fontFamily: "Manrope-ExtraBold", fontSize: 22,
     lineHeight: 28,
     fontWeight: "800",
     color: colors.ink,
   },
-  body: { fontSize: 16, lineHeight: 24, color: colors.ink },
+  body: { fontFamily: "Manrope-Regular", fontSize: 16, lineHeight: 24, color: colors.ink },
   muted: { color: colors.muted },
   button: {
     minHeight: 48,
@@ -156,10 +156,10 @@ const s = StyleSheet.create({
     borderColor: colors.border,
   },
   danger: { backgroundColor: colors.danger },
-  buttonText: { fontSize: 16, fontWeight: "700", color: "white" },
+  buttonText: { fontFamily: "Manrope-Bold", fontSize: 16, fontWeight: "700", color: "white" },
   disabled: { opacity: 0.48 },
   input: {
-    minHeight: 50,
+    fontFamily: "Manrope-Regular", minHeight: 50,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,

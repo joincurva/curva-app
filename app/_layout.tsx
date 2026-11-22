@@ -26,6 +26,8 @@ export default function Root() {
             headerStyle: { backgroundColor: colors.canvas },
             headerShadowVisible: false,
             headerTintColor: colors.ink,
+            headerTitleStyle: { fontFamily: "Manrope-ExtraBold" },
+            headerBackTitleStyle: { fontFamily: "Manrope-SemiBold" },
             contentStyle: { backgroundColor: colors.canvas },
           }}
         >

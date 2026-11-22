@@ -80,11 +80,11 @@ export function SignupTracker({ title, providerEventId, presaleOpensAt }: { titl
 const s = StyleSheet.create({
   box: { gap: space.sm },
   toggle: { flexDirection: "row", alignItems: "center", gap: 6, minHeight: 40 },
-  toggleText: { color: colors.cobalt, fontWeight: "700", fontSize: 14 },
-  help: { color: colors.muted, fontSize: 13, lineHeight: 18 },
+  toggleText: { fontFamily: "Manrope-Bold", color: colors.cobalt, fontWeight: "700", fontSize: 14 },
+  help: { fontFamily: "Manrope-Regular", color: colors.muted, fontSize: 13, lineHeight: 18 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.sm },
   chip: { minHeight: 40, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1, borderColor: colors.border, justifyContent: "center", backgroundColor: colors.surface },
   chipText: { color: brand.navy, fontWeight: "700" },
   saved: { flexDirection: "row", gap: 6, alignItems: "flex-start" },
-  savedText: { flex: 1, color: colors.ink, fontSize: 13, lineHeight: 18 },
+  savedText: { fontFamily: "Manrope-Regular", flex: 1, color: colors.ink, fontSize: 13, lineHeight: 18 },
 });

@@ -123,8 +123,8 @@ export default function Auth() {
 const s = StyleSheet.create({
   content: { padding: space.xl, gap: space.lg, paddingBottom: 80 },
   agree: { flexDirection: "row", alignItems: "center", gap: space.sm },
-  agreeText: { flex: 1, color: colors.ink, fontSize: 15, lineHeight: 21 },
+  agreeText: { fontFamily: "Manrope-Regular", flex: 1, color: colors.ink, fontSize: 15, lineHeight: 21 },
   link: { color: colors.cobalt, fontWeight: "700" },
-  small: { color: colors.muted, fontSize: 13, textAlign: "center" },
+  small: { fontFamily: "Manrope-Regular", color: colors.muted, fontSize: 13, textAlign: "center" },
   review: { gap: space.md },
 });

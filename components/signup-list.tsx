@@ -46,11 +46,11 @@ export function SignupList() {
 
 const s = StyleSheet.create({
   card: { backgroundColor: colors.surface, borderRadius: radius.card, borderWidth: 1, borderColor: colors.border, padding: space.lg, gap: space.md },
-  h2: { fontSize: 19, fontWeight: "800", color: colors.ink },
+  h2: { fontFamily: "Manrope-ExtraBold", fontSize: 19, fontWeight: "800", color: colors.ink },
   row: { flexDirection: "row", alignItems: "center", gap: space.md },
-  title: { fontSize: 15, fontWeight: "700", color: colors.ink },
-  meta: { fontSize: 13, color: colors.muted },
+  title: { fontFamily: "Manrope-Bold", fontSize: 15, fontWeight: "700", color: colors.ink },
+  meta: { fontFamily: "Manrope-Regular", fontSize: 13, color: colors.muted },
   pill: { minHeight: 36, paddingHorizontal: 12, borderRadius: 999, backgroundColor: brand.navy, justifyContent: "center" },
   pillOn: { backgroundColor: brand.gold },
-  pillText: { color: "white", fontWeight: "800", fontSize: 13 },
+  pillText: { fontFamily: "Manrope-ExtraBold", color: "white", fontWeight: "800", fontSize: 13 },
 });

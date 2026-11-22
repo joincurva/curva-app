@@ -40,7 +40,7 @@ const s = StyleSheet.create({
     gap: space.sm,
     paddingHorizontal: space.lg,
   },
-  buttonText: { color: brand.navy, fontWeight: "800", fontSize: 16 },
+  buttonText: { fontFamily: "Manrope-ExtraBold", color: brand.navy, fontWeight: "800", fontSize: 16 },
   noteRow: { flexDirection: "row", gap: space.sm, alignItems: "flex-start" },
-  note: { flex: 1, fontSize: 13, lineHeight: 18, color: colors.muted },
+  note: { fontFamily: "Manrope-Regular", flex: 1, fontSize: 13, lineHeight: 18, color: colors.muted },
 });

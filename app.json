@@ -48,6 +48,18 @@
         {
           "locationWhenInUsePermission": "Curva uses your location to show concerts, games and shows near you. It's only used for your search and never stored."
         }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/manrope-400.ttf",
+            "./assets/fonts/manrope-500.ttf",
+            "./assets/fonts/manrope-600.ttf",
+            "./assets/fonts/manrope-700.ttf",
+            "./assets/fonts/manrope-800.ttf"
+          ]
+        }
       ]
     ],
     "extra": {

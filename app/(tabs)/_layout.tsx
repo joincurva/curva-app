@@ -27,7 +27,7 @@ export default function TabsLayout() {
           backgroundColor: brand.navy,
           borderTopColor: brand.navy,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "700" },
+        tabBarLabelStyle: { fontFamily: "Manrope-Bold", fontSize: 11, fontWeight: "700" },
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Home", tabBarIcon: icon("home") }} />

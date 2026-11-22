@@ -76,9 +76,9 @@ export function ShowNotes({ show, past }: { show: FanEvent; past: boolean }) {
 const s = StyleSheet.create({
   card: { backgroundColor: colors.surface, borderRadius: radius.card, borderWidth: 1, borderColor: colors.border, padding: space.lg, gap: space.sm },
   head: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  h2: { fontSize: 19, fontWeight: "800", color: colors.ink },
-  saved: { fontSize: 13, fontWeight: "700", color: colors.cobalt },
-  label: { fontSize: 13, fontWeight: "700", color: colors.muted, marginTop: space.xs },
-  input: { minHeight: 46, borderWidth: 1, borderColor: colors.border, borderRadius: radius.control, paddingHorizontal: 12, fontSize: 16, color: brand.navy, backgroundColor: colors.canvas },
+  h2: { fontFamily: "Manrope-ExtraBold", fontSize: 19, fontWeight: "800", color: colors.ink },
+  saved: { fontFamily: "Manrope-Bold", fontSize: 13, fontWeight: "700", color: colors.cobalt },
+  label: { fontFamily: "Manrope-Bold", fontSize: 13, fontWeight: "700", color: colors.muted, marginTop: space.xs },
+  input: { fontFamily: "Manrope-Regular", minHeight: 46, borderWidth: 1, borderColor: colors.border, borderRadius: radius.control, paddingHorizontal: 12, fontSize: 16, color: brand.navy, backgroundColor: colors.canvas },
   multi: { minHeight: 90, paddingTop: 12, textAlignVertical: "top" },
 });

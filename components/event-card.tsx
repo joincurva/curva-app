@@ -65,8 +65,8 @@ const s = StyleSheet.create({
   image: { height: 145, width: "100%", backgroundColor: "#D8D1C5" },
   fallback: { backgroundColor: "#DDE4FA" },
   content: { padding: space.lg, gap: space.xs },
-  date: { fontSize: 12, fontWeight: "800", color: colors.cobalt },
-  name: { fontSize: 18, lineHeight: 23, fontWeight: "800", color: colors.ink },
-  meta: { fontSize: 14, lineHeight: 20, color: colors.muted },
-  source: { fontSize: 12, color: colors.muted, marginTop: space.xs },
+  date: { fontFamily: "Manrope-ExtraBold", fontSize: 12, fontWeight: "800", color: colors.cobalt },
+  name: { fontFamily: "Manrope-ExtraBold", fontSize: 18, lineHeight: 23, fontWeight: "800", color: colors.ink },
+  meta: { fontFamily: "Manrope-Regular", fontSize: 14, lineHeight: 20, color: colors.muted },
+  source: { fontFamily: "Manrope-Regular", fontSize: 12, color: colors.muted, marginTop: space.xs },
 });

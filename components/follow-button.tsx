@@ -55,5 +55,5 @@ const s = StyleSheet.create({
   on: { backgroundColor: colors.border },
   onDarkOn: { backgroundColor: brand.mist },
   compact: { minHeight: 36, paddingHorizontal: 12, alignSelf: "center" },
-  text: { fontWeight: "800", fontSize: 15 },
+  text: { fontFamily: "Manrope-ExtraBold", fontWeight: "800", fontSize: 15 },
 });

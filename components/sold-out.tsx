@@ -52,8 +52,8 @@ export function SoldOutHelp({ eventId, eventName, venue, city }: { eventId?: str
 
 const s = StyleSheet.create({
   card: { backgroundColor: colors.surface, borderRadius: radius.card, borderWidth: 1, borderColor: colors.border, padding: space.lg, gap: space.md },
-  h2: { fontSize: 19, fontWeight: "800", color: colors.ink },
+  h2: { fontFamily: "Manrope-ExtraBold", fontSize: 19, fontWeight: "800", color: colors.ink },
   row: { flexDirection: "row", gap: space.md, alignItems: "center" },
-  title: { fontSize: 15, fontWeight: "700", color: colors.ink },
-  text: { fontSize: 14, lineHeight: 20, color: colors.muted },
+  title: { fontFamily: "Manrope-Bold", fontSize: 15, fontWeight: "700", color: colors.ink },
+  text: { fontFamily: "Manrope-Regular", fontSize: 14, lineHeight: 20, color: colors.muted },
 });
