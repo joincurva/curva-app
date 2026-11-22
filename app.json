@@ -23,12 +23,10 @@
       },
       "privacyManifests": {
         "NSPrivacyAccessedAPITypes": []
-      },
-      "usesAppleSignIn": true
+      }
     },
     "plugins": [
       "expo-router",
-      "expo-apple-authentication",
       [
         "expo-splash-screen",
         {
@@ -70,7 +68,8 @@
       "eas": {
         "projectId": "b7a63ad8-18de-479a-b1a9-9ea0a8c1a7c1"
       },
-      "pushDeliveryEnabled": true
+      "pushDeliveryEnabled": true,
+      "appleSignIn": false
     },
     "experiments": {
       "typedRoutes": true

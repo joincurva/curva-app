@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import * as AppleAuthentication from "expo-apple-authentication";
+import Constants from "expo-constants";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useSession } from "../lib/session";
@@ -24,7 +25,9 @@ export default function Auth() {
   const { setSession } = useSession();
   const [appleReady, setAppleReady] = useState(false);
   useEffect(() => {
-    if (Platform.OS === "ios") void AppleAuthentication.isAvailableAsync().then(setAppleReady).catch(() => setAppleReady(false));
+    // Turned on once Sign in with Apple is enabled for the app in Apple Developer (app.json extra.appleSignIn).
+    const enabled = Boolean((Constants.expoConfig?.extra as { appleSignIn?: boolean } | undefined)?.appleSignIn);
+    if (enabled && Platform.OS === "ios") void AppleAuthentication.isAvailableAsync().then(setAppleReady).catch(() => setAppleReady(false));
   }, []);
 
   // Sign in with Apple: one tap with Face ID, no email to wait for. Works for new and returning fans.
