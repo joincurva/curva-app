@@ -207,7 +207,7 @@ export default function Alerts() {
   );
 }
 const s = StyleSheet.create({
-  content: { padding: space.lg, paddingBottom: 120 },
+  content: { padding: space.lg, gap: space.md, paddingBottom: 120 },
   form: { gap: space.md, marginBottom: space.xl },
   row: { flexDirection: "row", gap: space.sm, flexWrap: "wrap" },
 });
