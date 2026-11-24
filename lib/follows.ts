@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { followName, getFollows, unfollowName } from "./api";
 import { turnOnSaleAlerts } from "./push";
+import { askForRatingAfterGoodMoment } from "./review";
 import { useSession } from "./session";
 import type { Follow } from "./types";
 
@@ -42,6 +43,8 @@ export function useFollows() {
     await followName(name, session.token, kind);
     void turnOnSaleAlerts(session.token).catch(() => undefined);
     await refresh();
+    // A fan following three or more artists and teams is getting value from Curva.
+    if ((cache?.length ?? 0) >= 3) void askForRatingAfterGoodMoment();
   };
   const unfollow = async (name: string) => {
     if (!session) return;

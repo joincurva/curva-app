@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { markGoing, type GoingInput } from "./api";
 import { openOfficialTickets } from "./official";
+import { askForRatingAfterGoodMoment } from "./review";
 
 /**
  * Opens the official page inside Curva. When the fan taps Done, ask whether they got tickets,
@@ -27,8 +28,8 @@ export async function buyThenAsk(event: GoingInput, token?: string) {
           .then(() => {
             void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
             Alert.alert("Added to My Shows", "We'll stop sale reminders for this one and get your show day ready.", [
-              { text: "Done", style: "cancel" },
-              { text: "Open My Shows", onPress: () => router.push("/(tabs)") },
+              { text: "Done", style: "cancel", onPress: () => void askForRatingAfterGoodMoment() },
+              { text: "Open My Shows", onPress: () => { router.push("/(tabs)"); void askForRatingAfterGoodMoment(2500); } },
             ]);
           })
           .catch((x) => Alert.alert("Couldn't save that", x instanceof Error ? x.message : "Try again in a moment.")),
