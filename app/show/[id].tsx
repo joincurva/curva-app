@@ -57,7 +57,19 @@ export default function ShowScreen() {
   const days = daysUntil(show.event_date);
   const share = () =>
     void Share.share({
-      message: `I'm going to ${show.event_name}${show.event_date ? ` on ${showDate(show.event_date)}` : ""}${show.venue_name ? ` at ${show.venue_name}` : ""}. Planning it on Curva: https://joincurva.com`,
+      message: `I'm going to ${show.event_name}${show.event_date ? ` on ${showDate(show.event_date)}` : ""}${show.venue_name ? ` at ${show.venue_name}` : ""}. Planning it on Curva: https://joincurva.com/get?src=share`,
+    }).catch(() => undefined);
+  // "Who's going with you?": send friends the show and the plan, so the night is easy to coordinate.
+  const eventLink = show.provider === "ticketmaster" && show.provider_event_id ? `https://joincurva.com/events/${show.provider_event_id}` : undefined;
+  const invite = () =>
+    void Share.share({
+      message: [
+        `Going to ${show.event_name}${show.event_date ? ` on ${showDate(show.event_date)}` : ""}${show.venue_name ? ` at ${show.venue_name}` : ""}? Let's plan it together.`,
+        eventLink ? `Show details: ${eventLink}` : undefined,
+        "I'm using Curva for directions, the forecast and venue rules. It's free: https://joincurva.com/get?src=invite",
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
     }).catch(() => undefined);
   const remove = () =>
     Alert.alert("Remove from My Shows?", show.event_name, [
@@ -123,6 +135,17 @@ export default function ShowScreen() {
         <Action icon="calendar" label="Calendar" onPress={() => session && void subscribeCalendar(session.token)} />
         <Action icon="ticket" label="Event page" onPress={() => void openOfficialTickets(info?.officialUrl ?? show.official_url ?? undefined)} />
       </View>
+
+      {(days ?? 0) >= 0 ? (
+        <Pressable accessibilityRole="button" accessibilityLabel="Invite who's going with you" onPress={invite} style={[s.card, s.weather]}>
+          <Ionicons name="people-outline" size={28} color={colors.cobalt} />
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={s.tipTitle}>Who's going with you?</Text>
+            <Text style={s.small}>Send your crew the show and the plan: directions, forecast and venue rules.</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={colors.ink} />
+        </Pressable>
+      ) : null}
 
       {info?.weather ? (
         <View style={[s.card, s.weather]}>
